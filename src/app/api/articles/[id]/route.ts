@@ -2,7 +2,7 @@ import { getData } from "@/lib/data";
 import { fail, handle, ok } from "@/lib/api";
 import { uuidSchema } from "@/lib/validation/params";
 
-export function GET(_req: Request, ctx: RouteContext<"/api/articles/[id]">) {
+export function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {
   return handle(async () => {
     const { id } = await ctx.params;
     if (!uuidSchema.safeParse(id).success) return fail(400, "INVALID_ID", "id는 UUID여야 합니다.");
