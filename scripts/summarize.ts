@@ -17,7 +17,8 @@ async function main() {
   const db = getWriteClient();
   if (!db) {
     console.error("✖ Supabase 설정 없음(NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SECRET_KEY)");
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
   const { summarizeWithRetry, DEFAULT_MODEL } = await import("../src/lib/ai/summarize");
   const batch = intEnv("AI_SUMMARY_BATCH_LIMIT", 10, 50);
@@ -103,5 +104,5 @@ async function main() {
 
 main().catch((e) => {
   console.error(`✖ summarize aborted ${e instanceof Error ? e.message.slice(0, 80) : "unknown"}`);
-  process.exit(1);
+  process.exitCode = 1;
 });

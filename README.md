@@ -43,7 +43,9 @@ npm run dev
 ## 실데이터 모드 설정 (사용자가 직접 해야 하는 단계)
 
 1. **Supabase 프로젝트 생성** — <https://supabase.com> 에서 새 프로젝트를 만듭니다.
-2. **스키마 적용** — Dashboard → SQL Editor에 [`supabase/migrations/0001_initial_schema.sql`](supabase/migrations/0001_initial_schema.sql) 내용을 붙여 넣고 실행합니다. (Supabase CLI를 쓰면 `supabase db push`)
+2. **스키마 적용** — Dashboard → SQL Editor에서 아래 두 파일을 **순서대로** 붙여 넣고 실행합니다. (Supabase CLI를 쓰면 `supabase db push`)
+   1. [`0001_initial_schema.sql`](supabase/migrations/0001_initial_schema.sql) — 테이블·RLS·view·seed
+   2. [`0002_api_grants.sql`](supabase/migrations/0002_api_grants.sql) — Data API 접근 권한. 최근 Supabase 프로젝트는 이 권한을 자동으로 주지 않아, 빠뜨리면 모든 요청이 `42501 permission denied`로 실패합니다.
 3. **키 확인** — Project Settings → API Keys에서 Project URL, Publishable key, Secret key를 복사합니다.
 4. **GitHub 토큰(선택, 권장)** — GitHub Settings → Developer settings → Fine-grained token(권한 없음, public repo 읽기만)을 발급합니다. 없으면 검색 API 한도가 분당 10회로 줄어듭니다.
 5. **`.env.local` 작성**
@@ -108,6 +110,9 @@ AI_MONTHLY_REQUEST_CAP=1000 # 월 최대 시도 건수
 |---|---|
 | 화면에 계속 데모 배지가 보임 | `.env.local`의 `DEMO_MODE=false`와 Supabase URL/Publishable key 확인 후 dev 서버 재시작 |
 | “데이터를 불러오지 못했습니다” | 마이그레이션 적용 여부, Publishable key 확인. 서버 로그에는 `DB_ERROR:<code>`만 남습니다 |
+| 오류 코드 `42501` | `0002_api_grants.sql` 미실행 |
+| 오류 코드 `PGRST125` | `NEXT_PUBLIC_SUPABASE_URL`이 `https://<ref>.supabase.co` 형식이 아님(끝의 `/rest/v1` 제거) |
+| 오류 코드 `PGRST205` | `0001_initial_schema.sql` 미실행 |
 | `npm run ingest`가 즉시 종료 | `SUPABASE_SECRET_KEY` 누락. 키 없이 확인하려면 `npm run ingest:dry` |
 | GitHub 수집 개수가 적음 | `GITHUB_TOKEN` 미설정 시 rate limit으로 일부 쿼리만 실행됩니다 |
 | 요약이 계속 `분석 대기` | `AI_SUMMARIZATION_ENABLED=true` + `ANTHROPIC_API_KEY` 설정 후 `npm run summarize` |

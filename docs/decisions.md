@@ -26,3 +26,6 @@ Next 16.4, React 19.3, Tailwind 4.3, zod 4, supabase-js 2, @anthropic-ai/sdk 1.1
 
 ### D9. 다크 테마 기본 + 페인트 전 적용
 `<html data-theme>`을 인라인 스크립트로 설정하고 색은 모두 CSS 변수 토큰. 라이트 accent `#0284C7`는 작은 텍스트에서 대비가 부족해 텍스트용 `--accent-fg: #0369A1`을 따로 두었다.
+
+### D10. Data API 권한을 별도 마이그레이션으로 명시 (2026-11-19)
+실제 Supabase 프로젝트에 0001을 적용했더니 secret key를 포함한 모든 요청이 `42501 permission denied`였다. 최근 프로젝트는 SQL로 만든 테이블에 API 역할 권한을 자동으로 주지 않는다. 이미 0001을 적용한 DB가 있으므로 0001을 고치지 않고 `0002_api_grants.sql`로 GRANT를 추가했다. 공개 역할(anon/authenticated)에는 SELECT만, 쓰기는 service_role(수집기)만.

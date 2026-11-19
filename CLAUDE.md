@@ -24,3 +24,4 @@
 
 ## 진행 상황
 - 2026-11-19: Stage 1~4 1차 구현 완료(데모 모드 전 화면, API, 수집기 dry-run 실검증, AI 요약기, Actions, 테스트 36개, build 통과). 실 Supabase/Anthropic 연결은 미검증(키 없음).
+- 2026-11-19: GitHub 원격 연결, CI 통과. 실제 Supabase 연결 시 42501 발견 → 0002_api_grants.sql 추가(사용자 적용 대기).

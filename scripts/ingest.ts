@@ -41,7 +41,8 @@ async function main() {
         "  로컬: .env.local에 값을 넣으세요. GitHub Actions: 저장소 Settings → Secrets에 등록하세요.\n" +
         "  키 없이 수집 결과만 확인하려면: npm run ingest:dry",
     );
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
   if (!process.env.GITHUB_TOKEN) console.warn("! GITHUB_TOKEN 없음: 비인증 GitHub Search API는 분당 10회로 제한됩니다.");
 
@@ -75,10 +76,20 @@ async function main() {
       console.error(`✖ ${source.slug} error=${code} ${Date.now() - started}ms`);
     }
   }
-  if (failures === sources.length && sources.length > 0) process.exit(1);
+  if (failures === sources.length && sources.length > 0) process.exitCode = 1;
 }
 
+/** 자주 겪는 Supabase 설정 오류 → 해결 방법 */
+const HINTS: Record<string, string> = {
+  "42501": "테이블 접근 권한 없음 → Supabase SQL Editor에서 supabase/migrations/0002_api_grants.sql 실행",
+  PGRST125: "NEXT_PUBLIC_SUPABASE_URL 형식 오류 → https://<ref>.supabase.co 형태(끝에 /rest/v1 없이)인지 확인",
+  PGRST205: "테이블 없음 → Supabase SQL Editor에서 supabase/migrations/0001_initial_schema.sql 실행",
+  "42P01": "테이블 없음 → Supabase SQL Editor에서 supabase/migrations/0001_initial_schema.sql 실행",
+};
+
 main().catch((e) => {
-  console.error(`✖ ingest aborted error=${errorCode(e)}`);
-  process.exit(1);
+  const code = errorCode(e);
+  const hint = Object.entries(HINTS).find(([k]) => code.endsWith(k))?.[1];
+  console.error(`✖ ingest aborted error=${code}${hint ? `\n  → ${hint}` : ""}`);
+  process.exitCode = 1;
 });
