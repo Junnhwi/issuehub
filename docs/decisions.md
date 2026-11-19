@@ -43,4 +43,4 @@ Next 16.4, React 19.3, Tailwind 4.3, zod 4, supabase-js 2, @anthropic-ai/sdk 1.1
 무료 대안 중 GitHub Models는 2026-07-30 종료되어 제외했다. Google Gemini는 공식 가격표에 무료 티어(gemini-3.5-flash-lite 등)가 있어 기본 제공자로 삼고, Anthropic은 선택지로 남겼다(`src/lib/ai/provider.ts`, `AI_PROVIDER`). 무료 한도를 아끼려고 기사 8건을 요청 1번에 묶고 요청 사이를 4.5초 띄운다. 제목·발췌 번역은 요약과 분리해 저장한다(`excerpt_ko`, 0003 마이그레이션): 근거가 부족한 글도 번역은 보여 주되 요약은 만들지 않는다. 무료 티어 입력은 Google 제품 개선에 쓰일 수 있으나 보내는 것은 공개 기사 메타데이터뿐이다.
 
 ### D15. 수집 주기 1시간, Actions v7 (2026-11-19)
-새 글을 더 빨리 보여 주려고 cron을 6시간에서 매시 17분으로 줄였다. 실행이 겹치면 `concurrency`가 순서대로 대기시킨다. 번역·요약은 이번 달 처리 건수 상한(`AI_MONTHLY_REQUEST_CAP`, 기본 3000)이 그대로 막아 주고, 1회 최대 40건이라 Gemini 무료 한도 안에 든다. Node 20 지원 종료 경고를 없애려고 `actions/checkout`·`actions/setup-node`를 v7(Node 24 런타임)로 올렸다.
+새 글을 더 빨리 보여 주려고 cron을 6시간에서 매시 정각(`0 * * * *`)으로 줄였다. GitHub는 정각 예약이 몰려 수 분~수십 분 늦게 시작될 수 있다. 실행이 겹치면 `concurrency`가 순서대로 대기시킨다. 번역·요약은 이번 달 처리 건수 상한(`AI_MONTHLY_REQUEST_CAP`, 기본 3000)이 그대로 막아 주고, 1회 최대 40건이라 Gemini 무료 한도 안에 든다. Node 20 지원 종료 경고를 없애려고 `actions/checkout`·`actions/setup-node`를 v7(Node 24 런타임)로 올렸다.
