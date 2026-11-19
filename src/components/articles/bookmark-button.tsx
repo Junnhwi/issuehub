@@ -5,7 +5,7 @@ import { isSaved, toggleBookmark, useBookmarks, type Bookmark } from "@/lib/book
 import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/toast";
 
-export function BookmarkButton({ item, withLabel = false, className }: { item: Omit<Bookmark, "savedAt">; withLabel?: boolean; className?: string }) {
+export function BookmarkButton({ item, withLabel = false, ghost = false, className }: { item: Omit<Bookmark, "savedAt">; withLabel?: boolean; ghost?: boolean; className?: string }) {
   const list = useBookmarks();
   const saved = isSaved(list, item.type, item.id);
   return (
@@ -22,9 +22,13 @@ export function BookmarkButton({ item, withLabel = false, className }: { item: O
         else toast(result ? "저장했습니다 · Saved에서 확인" : "저장을 해제했습니다");
       }}
       className={cn(
-        "relative z-10 inline-flex items-center justify-center gap-1.5 rounded-lg border text-sm font-medium transition-colors",
+        "relative z-10 inline-flex items-center justify-center gap-1.5 rounded-lg border text-sm font-medium transition-[background-color,border-color,color,transform] duration-200 active:scale-[0.96]",
         withLabel ? "h-11 px-4 md:h-10" : "size-9",
-        saved ? "border-transparent bg-accent-soft text-accent-fg" : "border-line bg-surface text-muted hover:border-line-strong hover:text-fg",
+        saved
+          ? "border-transparent bg-accent-soft text-accent-fg"
+          : ghost
+            ? "border-transparent text-muted hover:bg-elevated hover:text-fg"
+            : "border-line bg-surface text-muted hover:border-line-strong hover:text-fg",
         className,
       )}
     >

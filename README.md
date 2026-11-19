@@ -38,7 +38,8 @@ npm run dev
 | `npm run lint` / `npm run typecheck` / `npm test` | ESLint / `tsc --noEmit` / Vitest |
 | `npm run ingest:dry` | 외부 API에서 실제로 수집하되 **저장하지 않음**(키 불필요) |
 | `npm run ingest` | 수집 후 Supabase에 저장(secret key 필요) |
-| `npm run summarize` | pending 기사 AI 요약(활성화 + API 키 필요, 없으면 아무것도 안 함) |
+| `npm run summarize` | pending 기사와 요약 없는 저장소를 한국어로 요약(활성화 + API 키 필요, 없으면 아무것도 안 함) |
+| `npm run summarize -- --dry-run` | API를 부르지 않고 요약 대상·건너뛸 대상 수만 확인(DB 키만 필요) |
 
 ## 실데이터 모드 설정 (사용자가 직접 해야 하는 단계)
 
@@ -93,10 +94,22 @@ AI_MONTHLY_REQUEST_CAP=1000 # 월 최대 시도 건수
 2. Environment Variables에 `DEMO_MODE`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` 만 등록합니다. 웹앱은 secret key나 Anthropic 키가 **필요 없습니다**(수집·요약은 GitHub Actions에서만 실행).
 3. 데이터가 없는 상태로 공개하려면 `DEMO_MODE=true`로 두세요. 데모 배지가 모든 화면에 표시됩니다.
 
+## 디자인 시스템과 taste-skill
+
+화면은 [taste-skill](https://github.com/Leonxlnx/taste-skill-classics) **v1**(`design-taste-frontend-v1`, MIT) 규칙으로 다듬었습니다. 스킬은 `.claude/skills/design-taste-frontend-v1/`에 설치되어 있고, 이름으로 호출할 때만 동작합니다(Claude Code에서 `/design-taste-frontend-v1`).
+
+- 대시보드용 다이얼: 디자인 변화 3 · 모션 3 · 정보 밀도 7
+- 카드 대신 구분선 리스트, 3열 동일 카드 금지, 지표는 상자 없는 띠
+- Geist(라틴)·Geist Mono(숫자) + Pretendard(한글), 아이콘 선 굵기 1.75 통일
+- 보라색·네온 글로우·무한 애니메이션 없음, 버튼 눌림 피드백만
+- 설계서와 충돌하는 규칙(Phosphor 아이콘 강제, 상시 무한 애니메이션)은 설계서를 우선
+
+최신판 2.5는 회사 랜딩 페이지 전용(한 화면 한 섹션, 사진·셰이더, 정적 export, Stop 훅)이라 대시보드에는 쓰지 않았습니다.
+
 ## 설계 원칙
 
 - 실데이터와 데모 데이터를 명확히 구분하고, 실데이터가 없을 때 오늘의 뉴스처럼 보이게 하지 않습니다.
-- AI가 분석하지 않은 글에는 요약을 만들지 않습니다(`분석 대기`/`요약 실패`/`요약 없음` 상태 구분).
+- AI가 분석하지 않은 글에는 요약을 만들지 않습니다(`요약 대기`/`요약 실패`/`요약 없음` 상태 구분).
 - Star 증가량은 IssueHub가 직접 기록한 **서로 다른 날짜의 스냅샷 2개 이상**이 있을 때만 표시하고, 아니면 `집계 중`.
 - "GitHub 공식 Trending"이라 표기하지 않고 "IssueHub 주목 저장소"라 부릅니다.
 - 출처 유형(공식/커뮤니티/개인)은 신뢰도 점수가 아닙니다. 숫자 신뢰도 점수를 만들지 않습니다.
@@ -115,4 +128,4 @@ AI_MONTHLY_REQUEST_CAP=1000 # 월 최대 시도 건수
 | 오류 코드 `PGRST205` | `0001_initial_schema.sql` 미실행 |
 | `npm run ingest`가 즉시 종료 | `SUPABASE_SECRET_KEY` 누락. 키 없이 확인하려면 `npm run ingest:dry` |
 | GitHub 수집 개수가 적음 | `GITHUB_TOKEN` 미설정 시 rate limit으로 일부 쿼리만 실행됩니다 |
-| 요약이 계속 `분석 대기` | `AI_SUMMARIZATION_ENABLED=true` + `ANTHROPIC_API_KEY` 설정 후 `npm run summarize` |
+| 요약이 계속 `요약 대기` | `AI_SUMMARIZATION_ENABLED=true` + `ANTHROPIC_API_KEY` 설정 후 `npm run summarize` |

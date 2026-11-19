@@ -52,6 +52,14 @@ export function scoreRelevance(text: string): number | null {
   return hits.size === 0 ? null : Math.min(hits.size, 10);
 }
 
+const NAMED_ENTITIES: Record<string, string> = {
+  nbsp: " ", amp: "&", lt: "<", gt: ">", quot: '"', apos: "'",
+  ndash: "–", mdash: "—", hellip: "…", lsquo: "‘", rsquo: "’", ldquo: "“", rdquo: "”",
+  laquo: "«", raquo: "»", middot: "·", bull: "•", copy: "©", reg: "®", trade: "™", times: "×",
+};
+
+const safeCodePoint = (n: number) => (Number.isInteger(n) && n > 0 && n <= 0x10ffff ? String.fromCodePoint(n) : "");
+
 /** HTML 태그·엔티티를 제거한 일반 텍스트, 최대 길이 제한 */
 export function stripHtml(input: string | null | undefined, max = 600): string | null {
   if (!input) return null;
@@ -59,13 +67,11 @@ export function stripHtml(input: string | null | undefined, max = 600): string |
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
     .replace(/<[^>]+>/g, " ")
-    .replace(/&nbsp;/g, " ")
+    // 일부 사이트는 엔티티를 이중 인코딩(&amp;ndash;)하므로 &amp;를 먼저 푼다
     .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;|&#x27;/g, "'")
-    .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
+    .replace(/&#x([0-9a-f]{1,6});/gi, (_, h) => safeCodePoint(parseInt(h, 16)))
+    .replace(/&#(\d{1,7});/g, (_, n) => safeCodePoint(Number(n)))
+    .replace(/&([a-z]+);/gi, (m, name: string) => NAMED_ENTITIES[name.toLowerCase()] ?? m)
     .replace(/\s+/g, " ")
     .trim();
   if (!text) return null;

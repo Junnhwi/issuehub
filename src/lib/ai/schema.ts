@@ -60,6 +60,26 @@ export function validateSummary(out: SummaryOutput): ValidSummary {
   };
 }
 
+/** 저장소 설명 → 한국어 1~2문장 요약 */
+export const RepoSummaryOutputSchema = z.object({
+  insufficient: z.boolean().describe("설명만으로 무엇을 하는 저장소인지 알 수 없으면 true"),
+  summaryKo: z.string(),
+});
+export type RepoSummaryOutput = z.infer<typeof RepoSummaryOutputSchema>;
+
+export function validateRepoSummary(out: RepoSummaryOutput): string {
+  const summaryKo = clean(out.summaryKo, 240);
+  const sentences = countSentences(summaryKo);
+  if (sentences < 1 || sentences > 2) throw new SummaryValidationError(`REPO_SENTENCES_${sentences}`);
+  return summaryKo;
+}
+
+/** 저장소 설명이 요약할 만큼 있는지(30자 이상) */
+export const MIN_REPO_DESCRIPTION_CHARS = 30;
+export function hasEnoughRepoDescription(description: string | null) {
+  return !!description && description.trim().length >= MIN_REPO_DESCRIPTION_CHARS;
+}
+
 /** 요약 근거가 될 텍스트가 충분한지(발췌 80자 이상). 부족하면 AI를 호출하지 않고 skipped 처리 */
 export const MIN_EXCERPT_CHARS = 80;
 export function hasEnoughContent(excerpt: string | null) {

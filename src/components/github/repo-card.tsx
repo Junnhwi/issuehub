@@ -1,10 +1,10 @@
-import { ArrowUpRight, GitFork, Star, TrendingUp, Hourglass } from "lucide-react";
+import { GitFork, Star, TrendingUp, Hourglass } from "lucide-react";
 import type { Repository } from "@/types";
 import { formatCount, formatSigned } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { LocalTime } from "@/components/ui/local-time";
 import { BookmarkButton } from "@/components/articles/bookmark-button";
-import { DemoBadge, TopicTag } from "@/components/articles/badges";
+import { TopicTag } from "@/components/articles/badges";
 
 const LANG_COLORS: Record<string, string> = {
   TypeScript: "#3178c6", JavaScript: "#f1e05a", Python: "#3572A5", Go: "#00ADD8", Rust: "#dea584",
@@ -75,47 +75,55 @@ export function RepoCard({ repo: r, compact = false }: { repo: Repository; compa
   }
 
   return (
-    <article className="group relative flex h-full flex-col rounded-2xl border border-line bg-surface p-4 transition-colors hover:border-line-strong focus-within:border-line-strong md:p-5">
-      <div className="flex items-start justify-between gap-3">
-        <h3 className="min-w-0 text-base font-semibold">
-          <a href={r.htmlUrl} target="_blank" rel="noopener noreferrer" className="break-all after:absolute after:inset-0 after:rounded-2xl">
+    <li className="group relative grid gap-x-8 gap-y-3 px-4 py-4 transition-colors hover:bg-hover/50 focus-within:bg-hover/50 sm:grid-cols-[minmax(0,1fr)_auto_auto] md:px-5">
+      <div className="min-w-0">
+        <h3 className="flex flex-wrap items-center gap-x-2 pr-10 text-[16px] font-semibold sm:pr-0">
+          <a href={r.htmlUrl} target="_blank" rel="noopener noreferrer" className="break-all outline-none after:absolute after:inset-0 focus-visible:underline">
             <span className="font-normal text-muted">{owner}/</span>
             {name}
           </a>
+          {r.isDemo && <span className="text-xs font-medium text-warning">데모</span>}
         </h3>
-        <div className="flex shrink-0 items-center gap-1.5">
-          {r.isDemo && <DemoBadge />}
-          <BookmarkButton item={repoBookmark(r)} />
+        <p className="mt-1 line-clamp-2 max-w-[72ch] text-[14.5px] leading-relaxed text-fg-2">
+          {r.summaryKo ?? r.description ?? <span className="text-muted">설명이 없습니다.</span>}
+        </p>
+        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-muted">
+          <LanguageDot language={r.language} />
+          {r.pushedAt && (
+            <span>
+              push <LocalTime iso={r.pushedAt} />
+            </span>
+          )}
+          {r.topics.length > 0 && (
+            <span className="-ml-1.5 flex flex-wrap">
+              {r.topics.map((t) => (
+                <TopicTag key={t} slug={t} />
+              ))}
+            </span>
+          )}
         </div>
       </div>
-      <p className="mt-2 line-clamp-2 flex-1 text-sm leading-relaxed text-fg-2">{r.summaryKo ?? r.description ?? "설명이 없습니다."}</p>
-      {r.topics.length > 0 && (
-        <div className="-ml-1.5 mt-2 flex flex-wrap">
-          {r.topics.map((t) => (
-            <TopicTag key={t} slug={t} />
-          ))}
-        </div>
-      )}
-      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-line pt-3 text-[13px] text-muted">
-        <span className="tabular inline-flex items-center gap-1 font-medium text-fg-2" title="총 Stars">
-          <Star className="size-4" aria-hidden />
+
+      <div className="flex items-center gap-5 sm:flex-col sm:items-end sm:justify-center sm:gap-1.5">
+        <span className="tabular inline-flex items-center gap-1.5 font-mono text-[15px] font-semibold text-fg" title="총 Stars">
+          <Star className="size-4 text-muted" aria-hidden />
           {r.starsTotal.toLocaleString("ko-KR")}
         </span>
-        <span className="tabular inline-flex items-center gap-1" title="Forks">
-          <GitFork className="size-4" aria-hidden />
-          {formatCount(r.forksTotal)}
+        <span className="tabular inline-flex items-center gap-1.5 font-mono text-[13px] text-muted" title="Forks">
+          <GitFork className="size-3.5" aria-hidden />
+          {r.forksTotal.toLocaleString("ko-KR")}
         </span>
-        <LanguageDot language={r.language} />
-        {r.pushedAt && (
-          <span>
-            push <LocalTime iso={r.pushedAt} />
-          </span>
-        )}
-        <span className="ml-auto flex items-center gap-2">
-          <GrowthBadge repo={r} />
-          <ArrowUpRight className="size-4 text-muted transition-colors group-hover:text-fg" aria-label="GitHub에서 열기" />
-        </span>
+        <GrowthBadge repo={r} />
       </div>
-    </article>
+
+      <div className="absolute right-2 top-3 sm:static sm:self-center">
+        <BookmarkButton item={repoBookmark(r)} ghost />
+      </div>
+    </li>
   );
+}
+
+/** 저장소 리스트 컨테이너 */
+export function RepoList({ children }: { children: React.ReactNode }) {
+  return <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">{children}</ul>;
 }

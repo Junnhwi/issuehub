@@ -80,7 +80,7 @@ function toRepo(r: RepoRow): Repository {
     fullName: r.full_name,
     htmlUrl: r.html_url,
     description: r.description,
-    summaryKo: r.summary_ko,
+    summaryKo: r.summary_ko || null, // "" = 요약 근거 부족(요약기 표시)
     language: r.language,
     topics: r.topic_slugs ?? [],
     githubTopics: r.github_topics ?? [],

@@ -6,7 +6,7 @@ export function LogoMark({ className = "size-7" }: { className?: string }) {
       <rect x="0.5" y="0.5" width="23" height="23" rx="7" fill="var(--accent-soft)" stroke="var(--border-strong)" />
       <circle cx="12" cy="12" r="7" stroke="var(--accent)" strokeOpacity="0.35" />
       <circle cx="12" cy="12" r="3.5" stroke="var(--accent)" strokeOpacity="0.6" />
-      <g className="radar-sweep">
+      <g>
         <path d="M12 12 L12 5 A7 7 0 0 1 18.06 8.5 Z" fill="var(--accent)" fillOpacity="0.28" />
         <line x1="12" y1="12" x2="12" y2="5" stroke="var(--accent)" strokeWidth="1.4" strokeLinecap="round" />
       </g>

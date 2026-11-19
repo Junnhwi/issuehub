@@ -5,7 +5,8 @@ import { notFound } from "next/navigation";
 import { getData } from "@/lib/data";
 import { uuidSchema } from "@/lib/validation/params";
 import { hostOf } from "@/lib/utils";
-import { ArticleCard, articleBookmark } from "@/components/articles/article-card";
+import { articleBookmark } from "@/components/articles/article-card";
+import { ArticleList, ArticleRow } from "@/components/articles/article-row";
 import { DemoBadge, SummaryStatusBadge, TierBadge, TopicTag } from "@/components/articles/badges";
 import { BookmarkButton } from "@/components/articles/bookmark-button";
 import { CopyLinkButton } from "@/components/articles/copy-link-button";
@@ -115,11 +116,11 @@ export default async function ArticlePage({ params }: Props) {
           <h2 id="related-title" className="mb-3 text-[15px] font-semibold">
             관련 이슈
           </h2>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <ArticleList>
             {related.map((r) => (
-              <ArticleCard key={r.id} article={r} />
+              <ArticleRow key={r.id} article={r} dense />
             ))}
-          </div>
+          </ArticleList>
         </section>
       )}
     </div>

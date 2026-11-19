@@ -46,16 +46,16 @@ interface DemoArticleInput {
 
 const ARTICLES: DemoArticleInput[] = [
   {
-    title: "[Demo] Acme LLM SDK 2.0 introduces structured output validation",
-    titleKo: "[데모] 가상의 Acme LLM SDK 2.0, 구조화 출력 검증 기능 도입",
-    excerpt: "Fictional release note used to demonstrate IssueHub's article layout. Acme LLM SDK 2.0 adds schema-validated responses and retry hooks.",
+    title: "[Demo] Kestrel LLM SDK 2.0 introduces structured output validation",
+    titleKo: "[데모] 가상의 Kestrel LLM SDK 2.0, 구조화 출력 검증 기능 도입",
+    excerpt: "Fictional release note used to demonstrate IssueHub's article layout. Kestrel LLM SDK 2.0 adds schema-validated responses and retry hooks.",
     source: "demo-official",
     topics: ["ai-llm", "backend"],
     hours: 2,
     popularity: 412,
     status: "completed",
     summary: {
-      summaryKo: "가상의 Acme LLM SDK 2.0 릴리스 노트를 예로 든 데모 요약입니다. 응답을 스키마로 검증하는 기능과 실패 시 재시도 훅이 추가되었다는 내용을 다룹니다.",
+      summaryKo: "가상의 Kestrel LLM SDK 2.0 릴리스 노트를 예로 든 데모 요약입니다. 응답을 스키마로 검증하는 기능과 실패 시 재시도 훅이 추가되었다는 내용을 다룹니다.",
       keyPoints: ["응답 스키마 검증 기능 추가", "검증 실패 시 재시도 훅 제공", "이전 버전과의 호환 모드 유지"],
       whyItMatters: "LLM 응답을 애플리케이션 데이터로 바로 쓰려면 형식 검증이 필수이기 때문에, 이런 기능이 있으면 파싱 오류 처리 코드가 줄어듭니다.",
       useCases: ["요약 결과를 DB에 저장하기 전 검증", "폼 자동 채우기 결과 검증"],

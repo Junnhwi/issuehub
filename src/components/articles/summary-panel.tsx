@@ -1,5 +1,6 @@
 import { AlertTriangle, CircleDashed, CircleSlash, Info, Lightbulb, ListChecks, Sparkles, Wrench } from "lucide-react";
 import type { Article } from "@/types";
+import { hasEnoughContent, MIN_EXCERPT_CHARS } from "@/lib/ai/schema";
 import { LocalTime } from "@/components/ui/local-time";
 
 function StatusNotice({ icon: Icon, tone, title, children }: { icon: typeof Info; tone: string; title: string; children: React.ReactNode }) {
@@ -36,8 +37,10 @@ export function SummaryPanel({ article: a }: { article: Article }) {
 
   if (a.summaryStatus === "pending")
     return (
-      <StatusNotice icon={CircleDashed} tone="bg-elevated text-muted" title="AI 분석 대기 중">
-        아직 요약이 생성되지 않았습니다. 요약 작업은 서버 배치로 실행되며, 완료 전까지는 원문 발췌와 원문 링크만 표시합니다.
+      <StatusNotice icon={CircleDashed} tone="bg-elevated text-muted" title="한국어 요약 대기 중">
+        {hasEnoughContent(a.excerpt)
+          ? `아직 요약이 생성되지 않았습니다. 다음 요약 배치에서 아래 원문 발췌(${a.excerpt!.trim().length}자)를 근거로 한국어 요약을 만듭니다. 그전까지는 발췌와 원문 링크만 표시합니다.`
+          : `원문 발췌가 ${MIN_EXCERPT_CHARS}자보다 짧아 요약 근거가 부족합니다. 다음 요약 배치에서 "요약 없음"으로 처리되며, 근거 없이 요약을 만들지 않습니다.`}
       </StatusNotice>
     );
   if (a.summaryStatus === "failed")

@@ -6,7 +6,7 @@ import { getData } from "@/lib/data";
 import { GROWTH_WINDOW_DAYS } from "@/lib/data/growth";
 import { parseLenient, repoListSchema, toParamObject } from "@/lib/validation/params";
 import { QueryFilters, type FilterField } from "@/components/articles/query-filters";
-import { RepoCard } from "@/components/github/repo-card";
+import { RepoCard, RepoList } from "@/components/github/repo-card";
 import { buttonClass } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LocalTime } from "@/components/ui/local-time";
@@ -67,18 +67,18 @@ export default async function GithubPage({ searchParams }: { searchParams: SP })
         </p>
       </div>
 
-      <div className="sticky top-[120px] z-20 -mx-4 mb-5 border-b border-line bg-bg/90 px-4 py-3 backdrop-blur-md md:top-16 md:-mx-6 md:px-6 xl:-mx-8 xl:px-8">
+      <div className="z-20 md:sticky -mx-4 mb-5 border-b border-line bg-bg/90 px-4 py-3 backdrop-blur-md md:top-16 md:-mx-6 md:px-6 xl:-mx-8 xl:px-8">
         <QueryFilters fields={fields} searchPlaceholder="저장소 이름·설명 검색" />
       </div>
 
       <p className="tabular mb-3 text-[13px] text-muted">{page.total?.toLocaleString("ko-KR") ?? page.items.length}개 저장소</p>
 
       {page.items.length ? (
-        <div className="grid gap-3 lg:grid-cols-2">
+        <RepoList>
           {page.items.map((r) => (
             <RepoCard key={r.id} repo={r} />
           ))}
-        </div>
+        </RepoList>
       ) : (
         <EmptyState
           icon={FolderSearch}

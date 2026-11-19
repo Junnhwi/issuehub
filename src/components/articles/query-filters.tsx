@@ -69,17 +69,17 @@ export function QueryFilters({ fields, searchPlaceholder, searchName = "q" }: { 
             />
           </form>
         )}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
           {fields
             .filter((f) => f.type === "select")
             .map((f) => (
-              <label key={f.name} className="relative">
+              <label key={f.name} className="relative min-w-0">
                 <span className="sr-only">{f.label}</span>
                 <select
                   value={params.get(f.name) ?? f.defaultValue}
                   onChange={(e) => update({ [f.name]: e.target.value })}
                   className={cn(
-                    "h-11 appearance-none rounded-xl border bg-surface pl-3 pr-8 text-sm outline-none transition-colors hover:border-line-strong focus:border-accent md:h-10",
+                    "h-11 w-full appearance-none truncate rounded-xl border bg-surface pl-3 pr-8 text-sm outline-none transition-colors hover:border-line-strong focus:border-accent sm:w-auto md:h-10",
                     params.has(f.name) ? "border-accent/60 text-fg" : "border-line text-fg-2",
                   )}
                 >

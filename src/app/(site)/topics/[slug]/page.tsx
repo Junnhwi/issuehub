@@ -6,7 +6,7 @@ import { getTopic, TOPICS } from "@/config/topics";
 import { getData } from "@/lib/data";
 import { articleListSchema, parseLenient, toParamObject } from "@/lib/validation/params";
 import { cn } from "@/lib/utils";
-import { ArticleCard } from "@/components/articles/article-card";
+import { ArticleList, ArticleRow } from "@/components/articles/article-row";
 import { QueryFilters } from "@/components/articles/query-filters";
 import { RepoCard } from "@/components/github/repo-card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -88,11 +88,11 @@ export default async function TopicPage({ params, searchParams }: Props) {
             />
           </div>
           {articles.items.length ? (
-            <div className="grid gap-3">
+            <ArticleList>
               {articles.items.map((a) => (
-                <ArticleCard key={a.id} article={a} />
+                <ArticleRow key={a.id} article={a} />
               ))}
-            </div>
+            </ArticleList>
           ) : (
             <EmptyState title="이 토픽의 이슈가 아직 없습니다" />
           )}
@@ -110,11 +110,11 @@ export default async function TopicPage({ params, searchParams }: Props) {
             }
           />
           {repos.items.length ? (
-            <div className="grid gap-3">
+            <ul className="rounded-2xl border border-line bg-surface p-1.5">
               {repos.items.map((r) => (
-                <RepoCard key={r.id} repo={r} />
+                <RepoCard key={r.id} repo={r} compact />
               ))}
-            </div>
+            </ul>
           ) : (
             <EmptyState title="관련 저장소가 없습니다" />
           )}

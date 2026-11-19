@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import { AppShell } from "@/components/layout/app-shell";
 import { THEME_KEY } from "@/config/theme";
@@ -11,6 +12,10 @@ const pretendard = localFont({
   weight: "45 920",
   display: "swap",
 });
+
+// 라틴 글자·숫자는 Geist, 한글은 Pretendard로 이어진다(Geist에 한글 글리프가 없음)
+const geist = Geist({ subsets: ["latin"], variable: "--font-geist", display: "swap" });
+const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono", display: "swap" });
 
 export const metadata: Metadata = {
   title: { default: "IssueHub — 기술의 흐름을 한눈에", template: "%s · IssueHub" },
@@ -30,7 +35,7 @@ const themeInit = `try{var t=localStorage.getItem("${THEME_KEY}");document.docum
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ko" data-theme="dark" className={pretendard.variable} suppressHydrationWarning>
+    <html lang="ko" data-theme="dark" className={`${geist.variable} ${geistMono.variable} ${pretendard.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInit }} />
       </head>

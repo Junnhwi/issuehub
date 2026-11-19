@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { articleListSchema, parseLenient, repoListSchema, uuidSchema } from "@/lib/validation/params";
-import { countSentences, hasEnoughContent, validateSummary, SummaryValidationError, type SummaryOutput } from "@/lib/ai/schema";
+import { countSentences, hasEnoughContent, hasEnoughRepoDescription, validateRepoSummary, validateSummary, SummaryValidationError, type SummaryOutput } from "@/lib/ai/schema";
 
 describe("article list params", () => {
   it("applies defaults", () => {
@@ -58,6 +58,13 @@ describe("AI summary validation", () => {
     expect(() => validateSummary({ ...good, summaryKo: "한 문장뿐입니다." })).toThrow(SummaryValidationError);
     expect(() => validateSummary({ ...good, summaryKo: "1. 2. 3. 4. 5." })).toThrow(SummaryValidationError);
     expect(countSentences("하나입니다. 둘입니다! 셋인가요?")).toBe(3);
+  });
+  it("validates repo summaries as 1–2 sentences and strips HTML", () => {
+    expect(validateRepoSummary({ insufficient: false, summaryKo: "<b>에이전트</b> 도구 모음입니다." })).toBe("에이전트 도구 모음입니다.");
+    expect(() => validateRepoSummary({ insufficient: false, summaryKo: "" })).toThrow(SummaryValidationError);
+    expect(() => validateRepoSummary({ insufficient: false, summaryKo: "하나. 둘. 셋." })).toThrow(SummaryValidationError);
+    expect(hasEnoughRepoDescription("CLI")).toBe(false);
+    expect(hasEnoughRepoDescription("Reverse engineer anything with agents, down to binaries.")).toBe(true);
   });
   it("skips AI when there is not enough source text", () => {
     expect(hasEnoughContent(null)).toBe(false);

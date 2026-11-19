@@ -43,6 +43,10 @@ describe("stripHtml", () => {
   it("removes tags, scripts and decodes entities", () => {
     expect(stripHtml("<p>Hi&nbsp;<b>there</b> &amp; you<script>x()</script></p>")).toBe("Hi there & you");
   });
+  it("decodes named, numeric and double-encoded entities", () => {
+    expect(stripHtml("MD &amp;ndash; Today, the Lawyers&amp;rsquo; Committee &#8220;x&#x201D; &hellip;")).toBe("MD – Today, the Lawyers’ Committee “x” …");
+    expect(stripHtml("&#1114112;x &unknown; ok")).toBe("x &unknown; ok");
+  });
   it("truncates long text", () => {
     expect(stripHtml("a".repeat(50), 10)).toHaveLength(10);
   });

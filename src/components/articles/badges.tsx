@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 
 const TIER = {
   official: { label: "공식 출처", icon: ShieldCheck, tone: "success" },
-  community: { label: "커뮤니티", icon: Users, tone: "violet" },
+  community: { label: "커뮤니티", icon: Users, tone: "neutral" },
   independent: { label: "개인·독립", icon: PenLine, tone: "neutral" },
 } as const;
 
@@ -38,7 +38,7 @@ export function SummaryStatusBadge({ status, sourceKind }: { status: SummaryStat
     return (
       <Badge>
         <CircleDashed className="size-3.5" aria-hidden />
-        분석 대기
+        요약 대기
       </Badge>
     );
   if (status === "failed")

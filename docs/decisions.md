@@ -29,3 +29,9 @@ Next 16.4, React 19.3, Tailwind 4.3, zod 4, supabase-js 2, @anthropic-ai/sdk 1.1
 
 ### D10. Data API 권한을 별도 마이그레이션으로 명시 (2026-11-19)
 실제 Supabase 프로젝트에 0001을 적용했더니 secret key를 포함한 모든 요청이 `42501 permission denied`였다. 최근 프로젝트는 SQL로 만든 테이블에 API 역할 권한을 자동으로 주지 않는다. 이미 0001을 적용한 DB가 있으므로 0001을 고치지 않고 `0002_api_grants.sql`로 GRANT를 추가했다. 공개 역할(anon/authenticated)에는 SELECT만, 쓰기는 service_role(수집기)만.
+
+### D11. 디자인 스킬은 taste-skill v1, 최신판 2.5는 보류 (2026-11-19)
+2.5는 회사 홍보 사이트용으로 한 화면 한 섹션·사진·셰이더·Next.js 정적 export를 강제하고 매 턴 Stop 훅으로 자체 Node 검사기를 실행한다. 정적 export는 API 라우트와 동적 렌더링을 깨므로 IssueHub에 맞지 않는다. 스크립트·훅이 없는 v1(SKILL.md 한 파일)을 커밋 5e08c93 기준으로 고정 설치하고(해시 검증), 다이얼을 대시보드용(3/3/7)으로 적용했다. 설계서와 충돌하는 규칙(Phosphor 아이콘, 상시 무한 애니메이션)은 설계서를 따른다.
+
+### D12. 저장소 한국어 요약은 상태 컬럼 없이 summary_ko로 관리 (2026-11-19)
+마이그레이션을 늘리지 않으려고 `summary_ko`의 null(미처리)/""(근거 부족·영구 실패)/문자열(완료)로 구분한다. 일시 오류는 null로 남겨 다음 배치에서 재시도한다. 화면·API에는 ""를 null로 바꿔 내보낸다.

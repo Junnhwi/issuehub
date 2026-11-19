@@ -14,6 +14,10 @@
 - `scripts/` 수집기·요약기(tsx). `server-only` 모듈을 import하지 말 것(Node에서 throw)
 - 클라이언트 컴포넌트: 검색/필터/테마/북마크/토스트만
 
+## 디자인
+- UI 작업 시 `.claude/skills/design-taste-frontend-v1/SKILL.md` 규칙을 따른다(다이얼 3/3/7). 설계서와 충돌하면 설계서 우선.
+- 리스트는 `ArticleList/ArticleRow`, `RepoList/RepoCard`(구분선). 카드는 위계가 필요한 대표 이슈에만.
+
 ## 반드시 지킬 것
 - 데모 데이터는 가상임을 표시(`[데모]`, `kind: "demo"`, example.com 링크). 실제 뉴스처럼 만들지 않는다.
 - 요약 상태 `pending|completed|failed|skipped`. completed가 아니면 요약을 렌더링하지 않는다.
@@ -25,3 +29,4 @@
 ## 진행 상황
 - 2026-11-19: Stage 1~4 1차 구현 완료(데모 모드 전 화면, API, 수집기 dry-run 실검증, AI 요약기, Actions, 테스트 36개, build 통과). 실 Supabase/Anthropic 연결은 미검증(키 없음).
 - 2026-11-19: GitHub 원격 연결, CI 통과. 실제 Supabase 연결 시 42501 발견 → 0002_api_grants.sql 추가(사용자 적용 대기).
+- 2026-11-19: Supabase 실데이터 연결·Actions 수집 확인. taste-skill v1 설치·적용(리스트형 재구성, Geist 폰트), 저장소 한국어 요약·summarize --dry-run 추가.

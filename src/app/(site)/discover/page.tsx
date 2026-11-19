@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { TOPICS } from "@/config/topics";
 import { getData } from "@/lib/data";
 import { articleListSchema, parseLenient, toParamObject } from "@/lib/validation/params";
-import { ArticleCard } from "@/components/articles/article-card";
+import { ArticleList, ArticleRow } from "@/components/articles/article-row";
 import { QueryFilters, type FilterField } from "@/components/articles/query-filters";
 import { buttonClass } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -88,7 +88,7 @@ export default async function DiscoverPage({ searchParams }: { searchParams: SP 
         description="키워드, 토픽, 출처, 기간으로 개발 소식을 찾아보세요. 필터 상태는 주소에 저장되어 공유하거나 뒤로 가기로 돌아올 수 있습니다."
       />
 
-      <div className="sticky top-[120px] z-20 -mx-4 mb-5 border-b border-line bg-bg/90 px-4 py-3 backdrop-blur-md md:top-16 md:-mx-6 md:px-6 xl:-mx-8 xl:px-8">
+      <div className="z-20 md:sticky -mx-4 mb-5 border-b border-line bg-bg/90 px-4 py-3 backdrop-blur-md md:top-16 md:-mx-6 md:px-6 xl:-mx-8 xl:px-8">
         <QueryFilters fields={fields} searchPlaceholder="제목·요약에서 검색" />
       </div>
 
@@ -104,11 +104,11 @@ export default async function DiscoverPage({ searchParams }: { searchParams: SP 
       </p>
 
       {page.items.length ? (
-        <div className="grid gap-3">
+        <ArticleList>
           {page.items.map((a) => (
-            <ArticleCard key={a.id} article={a} />
+            <ArticleRow key={a.id} article={a} />
           ))}
-        </div>
+        </ArticleList>
       ) : (
         <EmptyState
           icon={SearchX}

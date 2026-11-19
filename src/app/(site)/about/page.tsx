@@ -92,7 +92,7 @@ export default async function AboutPage() {
               <span><strong className="text-fg">공식 출처</strong> — 제품·프로젝트를 만든 조직의 블로그, 공식 API</span>
             </li>
             <li className="flex items-start gap-2">
-              <Users className="mt-1 size-4 shrink-0 text-violet" aria-hidden />
+              <Users className="mt-1 size-4 shrink-0 text-muted" aria-hidden />
               <span><strong className="text-fg">커뮤니티</strong> — 개발자 커뮤니티의 공유·토론 (예: Hacker News)</span>
             </li>
             <li className="flex items-start gap-2">
@@ -107,7 +107,7 @@ export default async function AboutPage() {
           <ul className="list-disc space-y-1.5 pl-5">
             <li>요약은 서버에서만 Anthropic API로 생성하며, 출처가 제공한 제목·발췌·공개 설명만을 근거로 합니다. 원문 전체를 읽은 결과가 아닙니다.</li>
             <li>원문에 없는 사실·기능·수치를 추가하지 않도록 지시하고, 결과 형식을 검증한 뒤에만 저장합니다.</li>
-            <li>근거가 부족하면 “요약 없음”, 생성에 실패하면 “요약 실패”, 아직 처리 전이면 “분석 대기”로 표시합니다. 이 경우 요약을 지어내지 않습니다.</li>
+            <li>근거가 부족하면 “요약 없음”, 생성에 실패하면 “요약 실패”, 아직 처리 전이면 “요약 대기”로 표시합니다. 이 경우 요약을 지어내지 않습니다.</li>
             <li>AI 요약은 틀릴 수 있습니다. 의사결정 전에는 반드시 원문을 확인하세요.</li>
           </ul>
         </Section>
