@@ -102,7 +102,7 @@ export default async function DashboardPage() {
           <section aria-labelledby="top-title">
             <SectionTitle id="top-title" title="주요 이슈" action={<span className="text-xs text-muted">최근 7일 · 출처 인기 지표 순</span>} />
             {featured ? (
-              <div className="grid gap-4 lg:grid-cols-[1.1fr_1fr]">
+              <div className="grid gap-4 lg:grid-cols-[1.1fr_1fr] lg:items-start">
                 <ArticleCard article={featured} variant="featured" />
                 {others.length > 0 && (
                   <ArticleList>
@@ -165,8 +165,8 @@ export default async function DashboardPage() {
                     href={`/topics/${t.slug}`}
                     className="-mx-2 flex h-9 items-center justify-between rounded-lg px-2 text-[14px] text-fg-2 transition-colors hover:bg-hover hover:text-fg"
                   >
-                    <span>
-                      <span className="mr-1 text-muted">#</span>
+                    <span className="flex items-center">
+                      <span className="mr-2.5 size-2 shrink-0 rounded-full" style={{ background: t.color }} aria-hidden />
                       {t.nameKo}
                     </span>
                     <span className="tabular font-mono text-xs text-muted">{formatCount(t.articleCount)}</span>

@@ -95,7 +95,7 @@ export function RepoCard({ repo: r, compact = false }: { repo: Repository; compa
             </span>
           )}
           {r.topics.length > 0 && (
-            <span className="-ml-1.5 flex flex-wrap">
+            <span className="flex flex-wrap gap-1.5">
               {r.topics.map((t) => (
                 <TopicTag key={t} slug={t} />
               ))}

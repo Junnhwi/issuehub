@@ -23,7 +23,7 @@ export function BookmarkButton({ item, withLabel = false, ghost = false, classNa
       }}
       className={cn(
         "relative z-10 inline-flex items-center justify-center gap-1.5 rounded-lg border text-sm font-medium transition-[background-color,border-color,color,transform] duration-200 active:scale-[0.96]",
-        withLabel ? "h-11 px-4 md:h-10" : "size-9",
+        withLabel ? "h-11 px-4 md:h-10" : "size-11 md:size-9",
         saved
           ? "border-transparent bg-accent-soft text-accent-fg"
           : ghost

@@ -1,11 +1,11 @@
 import { FolderSearch, Info } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { TOPICS } from "@/config/topics";
 import { getData } from "@/lib/data";
 import { GROWTH_WINDOW_DAYS } from "@/lib/data/growth";
 import { parseLenient, repoListSchema, toParamObject } from "@/lib/validation/params";
 import { QueryFilters, type FilterField } from "@/components/articles/query-filters";
+import { TopicFilter } from "@/components/articles/topic-filter";
 import { RepoCard, RepoList } from "@/components/github/repo-card";
 import { buttonClass } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -21,11 +21,10 @@ export default async function GithubPage({ searchParams }: { searchParams: SP })
   const raw = toParamObject(await searchParams);
   const params = parseLenient(repoListSchema, raw);
   const data = getData();
-  const [page, languages] = await Promise.all([data.listRepos(params), data.listLanguages()]);
+  const [page, languages, topics] = await Promise.all([data.listRepos(params), data.listLanguages(), data.listTopics()]);
 
   const fields: FilterField[] = [
     { name: "language", label: "언어", type: "select", defaultValue: "", options: [{ value: "", label: "전체" }, ...languages.map((l) => ({ value: l, label: l }))] },
-    { name: "topic", label: "토픽", type: "select", defaultValue: "", options: [{ value: "", label: "전체" }, ...TOPICS.map((t) => ({ value: t.slug, label: t.nameKo }))] },
     {
       name: "sort",
       label: "정렬",
@@ -67,7 +66,8 @@ export default async function GithubPage({ searchParams }: { searchParams: SP })
         </p>
       </div>
 
-      <div className="z-20 md:sticky -mx-4 mb-5 border-b border-line bg-bg/90 px-4 py-3 backdrop-blur-md md:top-16 md:-mx-6 md:px-6 xl:-mx-8 xl:px-8">
+      <div className="mb-6 space-y-4 border-b border-line pb-5">
+        <TopicFilter basePath="/github" params={raw} topics={topics} active={params.topic} countKey="repoCount" />
         <QueryFilters fields={fields} searchPlaceholder="저장소 이름·설명 검색" />
       </div>
 

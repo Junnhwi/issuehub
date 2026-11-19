@@ -1,4 +1,4 @@
-import { ArrowUpRight, PenLine, ShieldCheck, Sparkles, Users } from "lucide-react";
+import { ArrowUpRight, MessagesSquare, PenLine, ShieldCheck, Sparkles, Users } from "lucide-react";
 import Link from "next/link";
 import type { Article, SourceTier } from "@/types";
 import { cn, formatCount, hostOf } from "@/lib/utils";
@@ -24,26 +24,82 @@ export function TierLabel({ tier }: { tier: SourceTier }) {
   );
 }
 
+const linkBtn =
+  "relative z-10 inline-flex h-11 min-w-0 items-center gap-1.5 rounded-lg border border-line bg-surface px-3 text-[13px] font-medium text-fg-2 transition-[border-color,color,transform] hover:border-line-strong hover:text-fg active:scale-[0.97] md:h-9 md:px-3";
+
+/** 원문 사이트와 커뮤니티 토론으로 가는 외부 링크(새 창) */
+export function SourceLinks({ article: a, compact = false }: { article: Article; compact?: boolean }) {
+  const host = hostOf(a.originalUrl);
+  return (
+    <>
+      <a href={a.originalUrl} target="_blank" rel="noopener noreferrer" className={linkBtn} aria-label={`원문 열기: ${host} (새 창)`}>
+        <span className="text-fg">원문</span>
+        {!compact && <span className="max-w-[18ch] truncate font-normal text-muted">{host}</span>}
+        <ArrowUpRight className="size-3.5 shrink-0" aria-hidden />
+      </a>
+      {a.discussionUrl && (
+        <a href={a.discussionUrl} target="_blank" rel="noopener noreferrer" className={linkBtn} aria-label="Hacker News 토론 열기 (새 창)">
+          <MessagesSquare className="size-3.5 shrink-0" aria-hidden />
+          {compact ? "토론" : "HN 토론"}
+        </a>
+      )}
+    </>
+  );
+}
+
 /**
- * 리스트 한 줄. 카드 대신 구분선으로 묶어 정보 밀도를 높인다.
- * 요약이 완료된 글만 'AI 요약' 표시와 요약을, 나머지는 '원문 발췌'를 보여 준다.
+ * 이슈 한 줄. 토픽 → 제목 → 요약 → 출처·링크 순서로 읽힌다.
+ * 요약이 완료된 글만 'AI 요약'을, 나머지는 '원문 발췌'(영문일 수 있음)를 보조로 보여 준다.
  */
 export function ArticleRow({ article: a, dense = false }: { article: Article; dense?: boolean }) {
   const done = a.summaryStatus === "completed" && !!a.summaryKo;
   const preview = done ? a.summaryKo : a.excerpt;
   const time = a.publishedAt ?? a.fetchedAt;
   const demo = a.source.kind === "demo";
+  const topics = dense ? a.topics.slice(0, 1) : a.topics;
 
   return (
-    <li className="group relative transition-colors hover:bg-hover/50 focus-within:bg-hover/50">
-      <div className={cn("flex gap-4", dense ? "px-4 py-3.5" : "px-4 py-4 md:px-5 md:py-5")}>
-        <div className="min-w-0 flex-1">
-          <div className="mb-1.5 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[13px] text-muted">
+    <li className="group relative transition-colors hover:bg-hover/40 focus-within:bg-hover/40">
+      <div className={dense ? "px-4 py-4" : "px-4 py-5 md:px-6"}>
+        <div className="mb-2.5 flex items-start justify-between gap-3">
+          <div className="flex min-w-0 flex-wrap gap-1.5">
+            {topics.map((t) => (
+              <TopicTag key={t} slug={t} />
+            ))}
+            {done && (
+              <span className="inline-flex h-6 items-center gap-1 rounded-full bg-accent-soft px-2.5 text-[12px] font-semibold text-accent-fg">
+                <Sparkles className="size-3.5" aria-hidden />
+                {demo ? "예시 요약" : "AI 요약"}
+              </span>
+            )}
+          </div>
+          <span className="shrink-0 pt-0.5 text-[13px] text-muted">
+            <LocalTime iso={time} />
+          </span>
+        </div>
+
+        <h3 className={cn("font-semibold leading-[1.4] tracking-[-0.01em] text-fg", dense ? "line-clamp-2 text-[15.5px]" : "line-clamp-2 text-[17px] md:text-[18px]")}>
+          <Link href={`/articles/${a.id}`} className="outline-none after:absolute after:inset-0 focus-visible:underline">
+            {a.titleKo ?? a.title}
+          </Link>
+        </h3>
+        {a.titleKo && !dense && (
+          <p className="mt-1 line-clamp-1 text-[13px] text-muted" lang="en">
+            {a.title}
+          </p>
+        )}
+
+        {preview && !dense && (
+          <p className={cn("mt-2.5 line-clamp-2 max-w-[75ch] leading-relaxed", done ? "text-[15px] text-fg-2" : "text-[14px] text-muted")} lang={done ? "ko" : undefined}>
+            {!done && <span className="mr-1.5 text-[12px] font-medium text-muted/80">원문 발췌</span>}
+            {preview}
+          </p>
+        )}
+
+        <div className={cn("flex flex-wrap items-center justify-between gap-x-3 gap-y-2", dense ? "mt-2.5" : "mt-4")}>
+          <div className="flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1 text-[13px] text-muted">
             <span className="font-medium text-fg-2">{a.source.name}</span>
             <TierLabel tier={a.source.tier} />
-            <span>
-              <LocalTime iso={time} />
-            </span>
             {a.popularity !== null && (
               <span className="tabular font-mono text-[12px]" title="출처 인기 지표(예: Hacker News points)">
                 {formatCount(a.popularity)} pts
@@ -51,53 +107,10 @@ export function ArticleRow({ article: a, dense = false }: { article: Article; de
             )}
             {demo && <span className="font-medium text-warning">데모</span>}
           </div>
-
-          <h3 className={cn("font-semibold leading-snug text-fg", dense ? "line-clamp-2 text-[15px]" : "line-clamp-2 text-[16px] md:text-[17px]")}>
-            <Link href={`/articles/${a.id}`} className="outline-none after:absolute after:inset-0 focus-visible:underline">
-              {a.titleKo ?? a.title}
-            </Link>
-          </h3>
-          {a.titleKo && !dense && (
-            <p className="mt-0.5 line-clamp-1 text-[13px] text-muted" lang="en">
-              {a.title}
-            </p>
-          )}
-
-          {preview && !dense && (
-            <p className="mt-2 line-clamp-2 max-w-[72ch] text-[14.5px] leading-relaxed text-fg-2">
-              {done ? (
-                <span className="mr-1.5 inline-flex items-center gap-1 align-[-2px] text-[12px] font-semibold text-accent-fg">
-                  <Sparkles className="size-3.5" aria-hidden />
-                  {demo ? "예시 요약" : "AI 요약"}
-                </span>
-              ) : (
-                <span className="mr-1.5 text-[12px] font-medium text-muted">원문 발췌</span>
-              )}
-              {preview}
-            </p>
-          )}
-
-          {a.topics.length > 0 && !dense && (
-            <div className="-ml-1.5 mt-2 flex flex-wrap">
-              {a.topics.map((t) => (
-                <TopicTag key={t} slug={t} />
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="flex shrink-0 items-start gap-1.5 opacity-100 transition-opacity md:opacity-60 md:group-hover:opacity-100 md:group-focus-within:opacity-100">
-          <a
-            href={a.originalUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="relative z-10 grid size-9 place-items-center rounded-lg text-muted transition-colors hover:bg-elevated hover:text-fg active:scale-[0.96]"
-            aria-label={`원문 열기: ${hostOf(a.originalUrl)} (새 창)`}
-            title={`원문 열기 · ${hostOf(a.originalUrl)}`}
-          >
-            <ArrowUpRight className="size-4" aria-hidden />
-          </a>
-          <BookmarkButton item={articleBookmark(a)} ghost />
+          <div className="flex shrink-0 items-center gap-1.5">
+            <SourceLinks article={a} compact={dense} />
+            <BookmarkButton item={articleBookmark(a)} ghost />
+          </div>
         </div>
       </div>
     </li>

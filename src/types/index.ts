@@ -21,6 +21,8 @@ export interface Source extends SourceRef {
 export interface Topic {
   slug: string;
   nameKo: string;
+  /** 토픽 구분용 점 색(글자색으로 쓰지 않음) */
+  color: string;
   description: string;
   keywords: string[];
 }
@@ -42,6 +44,8 @@ export interface Article {
   caveats: string | null;
   summaryStatus: SummaryStatus;
   originalUrl: string;
+  /** 커뮤니티 토론 페이지(예: HN 댓글). 원문과 같거나 없으면 null */
+  discussionUrl: string | null;
   source: SourceRef;
   topics: string[];
   /** 출처가 제공한 인기 지표(예: HN points). 없으면 null */

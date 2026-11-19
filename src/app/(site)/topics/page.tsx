@@ -23,7 +23,7 @@ export default async function TopicsPage() {
             >
               <span className="min-w-0">
                 <span className="block text-[17px] font-semibold">
-                  <span className="mr-1 text-muted">#</span>
+                  <span className="mr-2.5 inline-block size-2.5 rounded-full align-middle" style={{ background: t.color }} aria-hidden />
                   {t.nameKo}
                 </span>
                 <span className="mt-1 block text-[14.5px] text-muted">{t.description}</span>

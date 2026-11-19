@@ -1,11 +1,11 @@
 import { SearchX } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { TOPICS } from "@/config/topics";
 import { getData } from "@/lib/data";
 import { articleListSchema, parseLenient, toParamObject } from "@/lib/validation/params";
 import { ArticleList, ArticleRow } from "@/components/articles/article-row";
 import { QueryFilters, type FilterField } from "@/components/articles/query-filters";
+import { TopicFilter } from "@/components/articles/topic-filter";
 import { buttonClass } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LocalTime } from "@/components/ui/local-time";
@@ -20,10 +20,9 @@ export default async function DiscoverPage({ searchParams }: { searchParams: SP 
   const raw = toParamObject(await searchParams);
   const params = parseLenient(articleListSchema, raw);
   const data = getData();
-  const [page, sources] = await Promise.all([data.listArticles(params), data.listSources()]);
+  const [page, sources, topics] = await Promise.all([data.listArticles(params), data.listSources(), data.listTopics()]);
 
   const fields: FilterField[] = [
-    { name: "topic", label: "토픽", type: "select", defaultValue: "", options: [{ value: "", label: "전체" }, ...TOPICS.map((t) => ({ value: t.slug, label: t.nameKo }))] },
     {
       name: "source",
       label: "출처",
@@ -85,10 +84,11 @@ export default async function DiscoverPage({ searchParams }: { searchParams: SP 
           </>
         }
         title="이슈 탐색"
-        description="키워드, 토픽, 출처, 기간으로 개발 소식을 찾아보세요. 필터 상태는 주소에 저장되어 공유하거나 뒤로 가기로 돌아올 수 있습니다."
+        description="개발 소식을 토픽·출처·기간별로 찾아보세요. 필터는 주소에 저장되어 그대로 공유할 수 있습니다."
       />
 
-      <div className="z-20 md:sticky -mx-4 mb-5 border-b border-line bg-bg/90 px-4 py-3 backdrop-blur-md md:top-16 md:-mx-6 md:px-6 xl:-mx-8 xl:px-8">
+      <div className="mb-6 space-y-4 border-b border-line pb-5">
+        <TopicFilter basePath="/discover" params={raw} topics={topics} active={params.topic} countKey="articleCount" />
         <QueryFilters fields={fields} searchPlaceholder="제목·요약에서 검색" />
       </div>
 

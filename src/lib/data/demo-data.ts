@@ -285,6 +285,7 @@ export const DEMO_ARTICLES: Article[] = ARTICLES.map((a, i) => ({
   caveats: a.summary?.caveats ?? null,
   summaryStatus: a.status,
   originalUrl: `https://example.com/demo/articles/${i + 1}`,
+  discussionUrl: null,
   source: ref(a.source),
   topics: a.topics,
   popularity: a.popularity,

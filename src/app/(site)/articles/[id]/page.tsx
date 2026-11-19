@@ -1,4 +1,4 @@
-import { ArrowLeft, ExternalLink, Quote } from "lucide-react";
+import { ArrowLeft, ExternalLink, MessagesSquare, Quote } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -41,11 +41,16 @@ export default async function ArticlePage({ params }: Props) {
       <article>
         <header>
           <div className="mb-4 flex flex-wrap items-center gap-1.5">
+            {a.topics.map((t) => (
+              <TopicTag key={t} slug={t} size="md" />
+            ))}
+          </div>
+          <div className="mb-3 flex flex-wrap items-center gap-1.5">
             {a.source.kind === "demo" && <DemoBadge />}
             <TierBadge tier={a.source.tier} />
             <SummaryStatusBadge status={a.summaryStatus} sourceKind={a.source.kind} />
           </div>
-          <h1 className="text-[26px] font-bold leading-snug md:text-[32px]">{a.titleKo ?? a.title}</h1>
+          <h1 className="text-[26px] font-bold leading-[1.3] tracking-tight md:text-[32px]">{a.titleKo ?? a.title}</h1>
           {a.titleKo && (
             <p className="mt-2 text-[15px] text-muted" lang="en">
               원제: {a.title}
@@ -82,16 +87,15 @@ export default async function ArticlePage({ params }: Props) {
               원문 보기 <span className="font-normal opacity-80">· {hostOf(a.originalUrl)}</span>
               <ExternalLink className="size-4" aria-hidden />
             </a>
+            {a.discussionUrl && (
+              <a href={a.discussionUrl} target="_blank" rel="noopener noreferrer" className={buttonClass("secondary", "md")}>
+                <MessagesSquare className="size-4" aria-hidden />
+                HN 토론 보기
+              </a>
+            )}
             <CopyLinkButton url={a.originalUrl} />
             <BookmarkButton item={articleBookmark(a)} withLabel />
           </div>
-          {a.topics.length > 0 && (
-            <div className="-ml-1.5 mt-4 flex flex-wrap">
-              {a.topics.map((t) => (
-                <TopicTag key={t} slug={t} />
-              ))}
-            </div>
-          )}
         </header>
 
         <div className="mt-8 space-y-6">

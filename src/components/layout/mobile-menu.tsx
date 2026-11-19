@@ -47,7 +47,7 @@ export function MobileMenu() {
             {TOPICS.map((t) => (
               <li key={t.slug}>
                 <Link href={`/topics/${t.slug}`} onClick={close} className="flex h-11 items-center rounded-lg px-3 text-sm text-fg-2 hover:bg-hover hover:text-fg">
-                  <span className="mr-2 text-muted">#</span>
+                  <span className="mr-2.5 size-2 shrink-0 rounded-full" style={{ background: t.color }} aria-hidden />
                   {t.nameKo}
                 </Link>
               </li>

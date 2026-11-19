@@ -7,6 +7,7 @@ import { periodStart } from "./query";
 
 interface ArticleRow {
   id: string;
+  source_item_id: string | null;
   original_url: string;
   title: string;
   title_ko: string | null;
@@ -50,6 +51,12 @@ interface RepoRow {
   growth_to: string | null;
 }
 
+function hnDiscussion(r: ArticleRow): string | null {
+  if (r.source_kind !== "hackernews" || !r.source_item_id) return null;
+  const url = `https://news.ycombinator.com/item?id=${encodeURIComponent(r.source_item_id)}`;
+  return url === r.original_url ? null : url;
+}
+
 function toArticle(r: ArticleRow): Article {
   return {
     id: r.id,
@@ -63,6 +70,7 @@ function toArticle(r: ArticleRow): Article {
     caveats: r.caveats,
     summaryStatus: r.summary_status,
     originalUrl: r.original_url,
+    discussionUrl: hnDiscussion(r),
     source: { slug: r.source_slug, name: r.source_name, kind: r.source_kind, tier: r.source_tier, homepageUrl: r.source_homepage_url },
     topics: r.topic_slugs ?? [],
     popularity: r.popularity,

@@ -56,16 +56,25 @@ export function SummaryStatusBadge({ status, sourceKind }: { status: SummaryStat
   );
 }
 
-export function TopicTag({ slug, linked = true }: { slug: string; linked?: boolean }) {
+/** 토픽 칩: 색 점 + 이름. 색은 구분 보조일 뿐 이름이 항상 함께 나온다. */
+export function TopicTag({ slug, linked = true, size = "sm" }: { slug: string; linked?: boolean; size?: "sm" | "md" }) {
   const topic = getTopic(slug);
   if (!topic) return null;
-  const cls = "relative z-10 inline-flex h-6 items-center rounded-md px-1.5 text-xs font-medium text-muted transition-colors";
+  const cls = `relative z-10 inline-flex shrink-0 items-center gap-1.5 rounded-full border border-line bg-elevated/60 font-medium text-fg-2 transition-colors ${
+    size === "md" ? "h-8 px-3 text-[13px]" : "h-6 px-2.5 text-[12px]"
+  }`;
+  const body = (
+    <>
+      <span className="size-2 rounded-full" style={{ background: topic.color }} aria-hidden />
+      {topic.nameKo}
+    </>
+  );
   return linked ? (
-    <Link href={`/topics/${slug}`} className={`${cls} hover:bg-hover hover:text-fg`}>
-      #{topic.nameKo}
+    <Link href={`/topics/${slug}`} className={`${cls} hover:border-line-strong hover:text-fg`}>
+      {body}
     </Link>
   ) : (
-    <span className={cls}>#{topic.nameKo}</span>
+    <span className={cls}>{body}</span>
   );
 }
 

@@ -46,7 +46,7 @@ function Sidebar({ mode }: { mode: DataMode }) {
             {TOPICS.map((t) => (
               <li key={t.slug}>
                 <Link href={`/topics/${t.slug}`} className="flex h-8 items-center rounded-md px-3 text-[13px] text-fg-2 transition-colors hover:bg-hover hover:text-fg">
-                  <span className="mr-2 text-muted">#</span>
+                  <span className="mr-2.5 size-2 shrink-0 rounded-full" style={{ background: t.color }} aria-hidden />
                   {t.nameKo}
                 </Link>
               </li>

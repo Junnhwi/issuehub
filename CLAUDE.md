@@ -17,6 +17,7 @@
 ## 디자인
 - UI 작업 시 `.claude/skills/design-taste-frontend-v1/SKILL.md` 규칙을 따른다(다이얼 3/3/7). 설계서와 충돌하면 설계서 우선.
 - 리스트는 `ArticleList/ArticleRow`, `RepoList/RepoCard`(구분선). 카드는 위계가 필요한 대표 이슈에만.
+- 토픽은 `TopicTag`(색 점 칩), 외부 링크는 `SourceLinks`(원문·HN 토론)를 재사용한다.
 
 ## 반드시 지킬 것
 - 데모 데이터는 가상임을 표시(`[데모]`, `kind: "demo"`, example.com 링크). 실제 뉴스처럼 만들지 않는다.
