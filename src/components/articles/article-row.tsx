@@ -84,7 +84,7 @@ export function ArticleRow({ article: a, dense = false }: { article: Article; de
             {a.titleKo ?? a.title}
           </Link>
         </h3>
-        {a.titleKo && !dense && (
+        {a.titleKo && a.titleKo !== a.title && !dense && (
           <p className="mt-1 line-clamp-1 text-[13px] text-muted" lang="en">
             {a.title}
           </p>

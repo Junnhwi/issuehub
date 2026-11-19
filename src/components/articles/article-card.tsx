@@ -43,7 +43,7 @@ export function ArticleCard({ article: a }: { article: Article; variant?: "featu
           {a.titleKo ?? a.title}
         </Link>
       </h3>
-      {a.titleKo && (
+      {a.titleKo && a.titleKo !== a.title && (
         <p className="mt-1.5 line-clamp-1 text-[13px] text-muted" lang="en">
           {a.title}
         </p>

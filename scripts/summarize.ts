@@ -110,8 +110,10 @@ async function main() {
 
   const results = new Map<string, ItemResult<ValidArticleItem>>();
   for (const batch of chunk(inputs, batchSize)) for (const [k, v] of await runArticles(batch)) results.set(k, v);
-  // 실패한 항목만 모아 한 번 더
-  const retry = inputs.filter((i) => !results.get(i.key)?.ok);
+  // 실패한 항목과 요약만 검증에 실패한 항목(예: 문장 수)을 모아 한 번 더
+  const needsRetry = (r: ItemResult<ValidArticleItem> | undefined) =>
+    !r?.ok || (!r.value.summary && r.value.summaryNote !== "INSUFFICIENT_CONTENT" && r.value.summaryNote !== "MODEL_INSUFFICIENT");
+  const retry = inputs.filter((i) => needsRetry(results.get(i.key)));
   for (const batch of chunk(retry, batchSize)) for (const [k, v] of await runArticles(batch)) results.set(k, v);
 
   const now = new Date().toISOString();

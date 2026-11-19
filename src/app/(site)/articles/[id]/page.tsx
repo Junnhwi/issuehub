@@ -51,7 +51,7 @@ export default async function ArticlePage({ params }: Props) {
             <SummaryStatusBadge status={a.summaryStatus} sourceKind={a.source.kind} />
           </div>
           <h1 className="text-[26px] font-bold leading-[1.3] tracking-tight md:text-[32px]">{a.titleKo ?? a.title}</h1>
-          {a.titleKo && (
+          {a.titleKo && a.titleKo !== a.title && (
             <p className="mt-2 text-[15px] text-muted" lang="en">
               원제: {a.title}
             </p>
