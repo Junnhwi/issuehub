@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.10.0",
+    "@google/genai": "^3.6.1",
     "@supabase/supabase-js": "^2.119.1",
     "fast-xml-parser": "^5.12.1",
     "lucide-react": "^1.76.0",

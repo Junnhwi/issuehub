@@ -37,6 +37,8 @@ export interface Article {
   title: string;
   titleKo: string | null;
   excerpt: string | null;
+  /** 발췌의 한국어 번역(AI). 요약과 별개 */
+  excerptKo: string | null;
   summaryKo: string | null;
   keyPoints: string[];
   whyItMatters: string | null;

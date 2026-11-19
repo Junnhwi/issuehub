@@ -31,7 +31,7 @@ describe("computeGrowth (observed star growth)", () => {
 
 const NOW = Date.parse("2026-11-19T12:00:00Z");
 const article = (over: Partial<Article>): Article => ({
-  id: "x", title: "t", titleKo: null, excerpt: null, summaryKo: null, keyPoints: [], whyItMatters: null, useCases: [], caveats: null,
+  id: "x", title: "t", titleKo: null, excerpt: null, excerptKo: null, summaryKo: null, keyPoints: [], whyItMatters: null, useCases: [], caveats: null,
   summaryStatus: "pending", originalUrl: "https://ex.com", discussionUrl: null, source: { slug: "hn", name: "HN", kind: "hackernews", tier: "community", homepageUrl: null },
   topics: [], popularity: null, relevanceScore: null, publishedAt: null, fetchedAt: "2026-11-19T00:00:00Z", summarizedAt: null, ...over,
 });

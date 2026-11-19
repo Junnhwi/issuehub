@@ -105,11 +105,22 @@ export default async function ArticlePage({ params }: Props) {
             <section className="rounded-2xl border border-line p-5">
               <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold text-muted">
                 <Quote className="size-4" aria-hidden />
-                원문 발췌 · 공개 메타데이터
+                {a.excerptKo ? "발췌 번역 · AI가 원문 발췌를 한국어로 옮겼습니다" : "원문 발췌 · 공개 메타데이터"}
               </h2>
-              <p className="text-[15px] leading-relaxed text-fg-2" lang="en">
-                {a.excerpt}
+              <p className="text-[15.5px] leading-[1.8] text-fg-2" lang={a.excerptKo ? "ko" : undefined}>
+                {a.excerptKo ?? a.excerpt}
               </p>
+              {a.excerptKo && (
+                <details className="group mt-3 border-t border-line pt-3">
+                  <summary className="cursor-pointer list-none text-[13px] font-medium text-muted hover:text-fg">
+                    <span className="group-open:hidden">원문 보기</span>
+                    <span className="hidden group-open:inline">원문 접기</span>
+                  </summary>
+                  <p className="mt-2 text-[14px] leading-relaxed text-muted" lang="en">
+                    {a.excerpt}
+                  </p>
+                </details>
+              )}
             </section>
           )}
         </div>

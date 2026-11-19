@@ -278,6 +278,7 @@ export const DEMO_ARTICLES: Article[] = ARTICLES.map((a, i) => ({
   title: a.title,
   titleKo: a.titleKo,
   excerpt: a.excerpt,
+  excerptKo: null,
   summaryKo: a.summary?.summaryKo ?? null,
   keyPoints: a.summary?.keyPoints ?? [],
   whyItMatters: a.summary?.whyItMatters ?? null,

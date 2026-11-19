@@ -71,9 +71,9 @@ export function ArticleCard({ article: a }: { article: Article; variant?: "featu
         ) : (
           a.excerpt && (
             <>
-              <p className="mb-1.5 text-[12px] font-medium text-muted">원문 발췌 · 한국어 요약 대기</p>
-              <p className="line-clamp-5 text-[14.5px] leading-relaxed text-muted" lang="en">
-                {a.excerpt}
+              <p className="mb-1.5 text-[12px] font-medium text-muted">{a.excerptKo ? "발췌 번역 · AI" : "원문 발췌 · 한국어 처리 대기"}</p>
+              <p className={a.excerptKo ? "line-clamp-5 text-[15px] leading-[1.75] text-fg-2" : "line-clamp-5 text-[14.5px] leading-relaxed text-muted"} lang={a.excerptKo ? "ko" : undefined}>
+                {a.excerptKo ?? a.excerpt}
               </p>
             </>
           )

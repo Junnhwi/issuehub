@@ -12,6 +12,7 @@ interface ArticleRow {
   title: string;
   title_ko: string | null;
   excerpt: string | null;
+  excerpt_ko?: string | null;
   summary_ko: string | null;
   key_points: string[] | null;
   why_it_matters: string | null;
@@ -63,6 +64,7 @@ function toArticle(r: ArticleRow): Article {
     title: r.title,
     titleKo: r.title_ko,
     excerpt: r.excerpt,
+    excerptKo: r.excerpt_ko ?? null, // 0003 마이그레이션 전이면 열이 없어 undefined
     summaryKo: r.summary_ko,
     keyPoints: r.key_points ?? [],
     whyItMatters: r.why_it_matters,

@@ -52,8 +52,11 @@ jobs:
         if: ${{ !inputs.skip_summarize }}
         env:
           AI_SUMMARIZATION_ENABLED: ${{ vars.AI_SUMMARIZATION_ENABLED || 'false' }}
+          AI_PROVIDER: ${{ vars.AI_PROVIDER }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           ANTHROPIC_MODEL: ${{ vars.ANTHROPIC_MODEL }}
-          AI_SUMMARY_BATCH_LIMIT: ${{ vars.AI_SUMMARY_BATCH_LIMIT || '10' }}
-          AI_MONTHLY_REQUEST_CAP: ${{ vars.AI_MONTHLY_REQUEST_CAP || '1000' }}
+          AI_SUMMARY_BATCH_LIMIT: ${{ vars.AI_SUMMARY_BATCH_LIMIT || '40' }}
+          AI_MONTHLY_REQUEST_CAP: ${{ vars.AI_MONTHLY_REQUEST_CAP || '3000' }}
         run: npm run summarize

@@ -49,11 +49,12 @@ export function SourceLinks({ article: a, compact = false }: { article: Article;
 
 /**
  * 이슈 한 줄. 토픽 → 제목 → 요약 → 출처·링크 순서로 읽힌다.
- * 요약이 완료된 글만 'AI 요약'을, 나머지는 '원문 발췌'(영문일 수 있음)를 보조로 보여 준다.
+ * 요약이 완료된 글은 AI 요약을, 아니면 발췌(한국어 번역이 있으면 번역)를 보조로 보여 준다.
  */
 export function ArticleRow({ article: a, dense = false }: { article: Article; dense?: boolean }) {
   const done = a.summaryStatus === "completed" && !!a.summaryKo;
-  const preview = done ? a.summaryKo : a.excerpt;
+  const preview = done ? a.summaryKo : (a.excerptKo ?? a.excerpt);
+  const korean = done || !!a.excerptKo;
   const time = a.publishedAt ?? a.fetchedAt;
   const demo = a.source.kind === "demo";
   const topics = dense ? a.topics.slice(0, 1) : a.topics;
@@ -90,8 +91,8 @@ export function ArticleRow({ article: a, dense = false }: { article: Article; de
         )}
 
         {preview && !dense && (
-          <p className={cn("mt-2.5 line-clamp-2 max-w-[75ch] leading-relaxed", done ? "text-[15px] text-fg-2" : "text-[14px] text-muted")} lang={done ? "ko" : undefined}>
-            {!done && <span className="mr-1.5 text-[12px] font-medium text-muted/80">원문 발췌</span>}
+          <p className={cn("mt-2.5 line-clamp-2 max-w-[75ch] leading-relaxed", korean ? "text-[15px] text-fg-2" : "text-[14px] text-muted")} lang={korean ? "ko" : undefined}>
+            {!done && <span className="mr-1.5 text-[12px] font-medium text-muted/80">{a.excerptKo ? "발췌 번역" : "원문 발췌"}</span>}
             {preview}
           </p>
         )}
