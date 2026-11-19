@@ -1,0 +1,13 @@
+import type { Article, Page, Repository, Source, Stats, TopicWithCounts } from "@/types";
+import type { ArticleListParams, RepoListParams } from "@/lib/validation/params";
+
+export interface DataAdapter {
+  listArticles(p: ArticleListParams): Promise<Page<Article>>;
+  getArticle(id: string): Promise<{ article: Article; related: Article[] } | null>;
+  listRepos(p: RepoListParams): Promise<Page<Repository>>;
+  getRepo(id: string): Promise<{ repo: Repository; snapshots: { capturedDate: string; starsCount: number }[] } | null>;
+  listLanguages(): Promise<string[]>;
+  listTopics(): Promise<TopicWithCounts[]>;
+  listSources(): Promise<Source[]>;
+  getStats(): Promise<Stats>;
+}

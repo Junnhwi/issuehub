@@ -1,0 +1,59 @@
+name: Ingest
+
+on:
+  schedule:
+    - cron: "17 */6 * * *" # UTC 기준 6시간마다 (KST 02:17, 08:17, 14:17, 20:17)
+  workflow_dispatch:
+    inputs:
+      source:
+        description: "특정 소스 slug만 수집 (비우면 전체)"
+        required: false
+        default: ""
+      skip_summarize:
+        description: "AI 요약 단계를 건너뜀"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ingest
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      INGEST_BATCH_LIMIT: ${{ vars.INGEST_BATCH_LIMIT || '30' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      - name: Check required secrets
+        run: |
+          if [ -z "$NEXT_PUBLIC_SUPABASE_URL" ] || [ -z "$SUPABASE_SECRET_KEY" ]; then
+            echo "::error::NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SECRET_KEY 시크릿이 없습니다. 저장소 Settings → Secrets and variables → Actions 에 등록하세요."
+            exit 1
+          fi
+
+      - name: Ingest
+        run: npm run ingest -- ${{ inputs.source && format('--source={0}', inputs.source) || '' }}
+
+      - name: AI summarize
+        if: ${{ !inputs.skip_summarize }}
+        env:
+          AI_SUMMARIZATION_ENABLED: ${{ vars.AI_SUMMARIZATION_ENABLED || 'false' }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_MODEL: ${{ vars.ANTHROPIC_MODEL }}
+          AI_SUMMARY_BATCH_LIMIT: ${{ vars.AI_SUMMARY_BATCH_LIMIT || '10' }}
+          AI_MONTHLY_REQUEST_CAP: ${{ vars.AI_MONTHLY_REQUEST_CAP || '1000' }}
+        run: npm run summarize
