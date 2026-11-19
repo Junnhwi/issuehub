@@ -15,7 +15,7 @@ Next.js App Router 기반 포트폴리오 프로젝트입니다. API 키나 DB �
 | 데이터 | Supabase PostgreSQL 스키마·RLS·view, 데모/실데이터 어댑터 자동 전환 |
 | 수집 | GitHub Search API, Hacker News API, 검증된 RSS(GitHub Blog, Next.js Blog, Cloudflare Blog), URL 정규화·중복 제거·재실행 안전 upsert, 일별 Star 스냅샷 |
 | AI | 서버 전용 Anthropic 요약(구조화 출력 + zod 검증 + 재시도), 근거 부족 시 `요약 없음`, 키 없으면 no-op |
-| 자동화 | GitHub Actions 6시간 주기 수집 + 수동 실행, CI(lint/typecheck/test/build) |
+| 자동화 | GitHub Actions 1시간 주기 수집 + 수동 실행, CI(lint/typecheck/test/build) |
 | API | `GET /api/health · articles · articles/:id · repos · repos/:id · topics · sources · stats` ([docs/api.md](docs/api.md)) |
 
 ## 빠른 시작 (Windows PowerShell)

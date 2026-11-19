@@ -2,7 +2,7 @@ name: Ingest
 
 on:
   schedule:
-    - cron: "17 */6 * * *" # UTC 기준 6시간마다 (KST 02:17, 08:17, 14:17, 20:17)
+    - cron: "17 * * * *" # 매시 17분 (정각 혼잡 회피)
   workflow_dispatch:
     inputs:
       source:
@@ -31,8 +31,8 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       INGEST_BATCH_LIMIT: ${{ vars.INGEST_BATCH_LIMIT || '30' }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm

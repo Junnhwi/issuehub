@@ -56,7 +56,7 @@ export default async function AboutPage() {
           </ul>
           <p className="flex items-start gap-2">
             <Clock className="mt-1 size-4 shrink-0 text-muted" aria-hidden />
-            GitHub Actions가 6시간마다(UTC 기준 매 6시간 17분) 수집을 실행합니다. 화면의 시각은 브라우저의 로컬 시간대로 표시되며, 기사 게시 시각과 IssueHub 수집 시각을 구분해 보여 줍니다.
+            GitHub Actions가 1시간마다(매시 17분) 수집을 실행합니다. 화면의 시각은 브라우저의 로컬 시간대로 표시되며, 기사 게시 시각과 IssueHub 수집 시각을 구분해 보여 줍니다.
           </p>
           {mode === "demo" && (
             <p className="rounded-lg bg-warning-soft px-3 py-2 text-sm text-warning">
