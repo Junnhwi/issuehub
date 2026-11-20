@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { releaseLabel, reviewTone, sortGames } from "@/lib/games";
-import { collectRanks, normalizeStoreItem, type StoreItem } from "../scripts/sources/steam";
+import { collectRanks, normalizeStoreItem, searchAppids, type StoreItem } from "../scripts/sources/steam";
 import type { Game } from "@/types";
 
 const game = (over: Partial<Game>): Game => ({
@@ -45,6 +45,12 @@ describe("steam store item normalization", () => {
     expect(ranks.get(7)).toEqual({ most_played: 1, top_sellers: 2 });
     expect(ranks.has(6)).toBe(false);
   });
+  it("prefers the store search lists and reads appids from their image urls", () => {
+    const ids = searchAppids([{ logo: "https://x/steam/apps/3321460/abc/capsule_sm_120.jpg?t=1" }, { logo: "https://x/no-id.jpg" }, {}]);
+    expect(ids).toEqual([3321460]);
+    const ranks = collectRanks({ coming_soon: { items: [{ id: 9, type: 0 }] } }, [], 30, { coming_soon: [11, 12] });
+    expect([ranks.get(11), ranks.get(12), ranks.has(9)]).toEqual([{ coming_soon: 1 }, { coming_soon: 2 }, false]);
+  });
 });
 
 describe("game helpers", () => {
@@ -54,13 +60,13 @@ describe("game helpers", () => {
     expect(releaseLabel(undefined, undefined, true)).toBe("출시 예정");
     expect(releaseLabel(1763510400, undefined, false)).toBe("2025년 11월 18일 출시");
   });
-  it("sorts new releases by review count, others by Steam rank", () => {
+  it("sorts each list by Steam rank", () => {
     const items = [
       game({ appid: 1, ranks: { new_releases: 1, top_sellers: 2 }, review: { label: "x", percent: 90, count: 5 } }),
       game({ appid: 2, ranks: { new_releases: 2, top_sellers: 1 }, review: { label: "x", percent: 90, count: 500 } }),
       game({ appid: 3, ranks: { coming_soon: 1 } }),
     ];
-    expect(sortGames(items, "new_releases").map((g) => g.appid)).toEqual([2, 1]);
+    expect(sortGames(items, "new_releases").map((g) => g.appid)).toEqual([1, 2]);
     expect(sortGames(items, "top_sellers").map((g) => g.appid)).toEqual([2, 1]);
   });
   it("maps review percent to a tone, with no tone when there are no reviews", () => {

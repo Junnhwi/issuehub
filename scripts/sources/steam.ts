@@ -5,7 +5,8 @@ import { fetchJson, mapLimit } from "../lib/http";
 
 /**
  * Steam 공개 API(키 불필요)로 게임 동향을 모은다.
- * - 목록: 상점 featuredcategories(최고 인기·신규 출시·곧 출시) + 동시접속자 차트
+ * - 목록: 상점 검색의 인기 목록(판매 순위·인기 신작·인기 출시 예정) + 동시접속자 차트.
+ *   검색 목록을 못 받으면 상점 featuredcategories의 같은 목록으로 대신한다
  * - 상세: IStoreBrowseService/GetItems 한 번에 50개(한국어 설명·평가 요약·태그·가격·출시일·이미지)
  * - 현재 동시접속자: 출시된 게임만 ISteamUserStats/GetNumberOfCurrentPlayers
  */
@@ -122,29 +123,46 @@ async function currentPlayers(appid: number): Promise<number | null> {
   }
 }
 
-/** 목록별 순위를 모은다(같은 목록 안 중복 제거, 1부터) */
-export function collectRanks(featured: Featured, mostPlayed: { appid: number }[], limit: number) {
+/** 상점 검색 JSON의 항목(이름·작은 이미지)에서 appid를 꺼낸다 */
+export function searchAppids(items: { logo?: string }[]): number[] {
+  return items.map((i) => Number(i.logo?.match(/\/apps\/(\d+)\//)?.[1])).filter((n) => Number.isInteger(n) && n > 0);
+}
+
+const SEARCH_FILTERS = { top_sellers: "topsellers", new_releases: "popularnew", coming_soon: "popularcomingsoon" } as const;
+
+async function fetchSearchList(filter: string): Promise<number[]> {
+  try {
+    const res = await fetchJson<{ items?: { logo?: string }[] }>(`${STORE}/search/results/?filter=${filter}&json=1&cc=kr&l=koreana&count=30&category1=998`);
+    return searchAppids(res.items ?? []);
+  } catch {
+    return [];
+  }
+}
+
+/** 목록별 순위를 모은다(같은 목록 안 중복 제거, 1부터). search에 값이 있으면 그 목록을 우선 쓴다 */
+export function collectRanks(featured: Featured, mostPlayed: { appid: number }[], limit: number, search: Partial<Record<GameList, number[]>> = {}) {
   const ranks = new Map<number, NormalizedGame["ranks"]>();
   const add = (list: GameList, ids: number[]) => {
     [...new Set(ids)].slice(0, limit).forEach((id, i) => ranks.set(id, { ...ranks.get(id), [list]: i + 1 }));
   };
   const ids = (key: string) => (((featured[key] as { items?: FeaturedItem[] } | undefined)?.items ?? []).filter((x) => x.type === 0).map((x) => x.id));
   add("most_played", mostPlayed.map((r) => r.appid));
-  add("top_sellers", ids("top_sellers"));
-  add("new_releases", ids("new_releases"));
-  add("coming_soon", ids("coming_soon"));
+  for (const list of ["top_sellers", "new_releases", "coming_soon"] as const) add(list, search[list]?.length ? search[list] : ids(list));
   return ranks;
 }
 
 export async function fetchSteamGames(limit: number): Promise<NormalizedGame[]> {
-  const [featured, chart, tagNames] = await Promise.all([
-    fetchJson<Featured>(`${STORE}/api/featuredcategories?cc=kr&l=koreana`),
+  const [featured, chart, tagNames, topSellers, popularNew, popularSoon] = await Promise.all([
+    fetchJson<Featured>(`${STORE}/api/featuredcategories?cc=kr&l=koreana`).catch(() => ({}) as Featured),
     fetchJson<{ response: { ranks?: { appid: number; peak_in_game: number }[] } }>(`${API}/ISteamChartsService/GetMostPlayedGames/v1/`),
     fetchTagNames(),
+    fetchSearchList(SEARCH_FILTERS.top_sellers),
+    fetchSearchList(SEARCH_FILTERS.new_releases),
+    fetchSearchList(SEARCH_FILTERS.coming_soon),
   ]);
   const chartRanks = chart.response.ranks ?? [];
   const peaks = new Map(chartRanks.map((r) => [r.appid, r.peak_in_game]));
-  const ranks = collectRanks(featured, chartRanks, limit);
+  const ranks = collectRanks(featured, chartRanks, limit, { top_sellers: topSellers, new_releases: popularNew, coming_soon: popularSoon });
   const items = await fetchItems([...ranks.keys()]);
   const games = items
     .map((it) => normalizeStoreItem(it, tagNames, ranks.get(it.appid) ?? {}, peaks.get(it.appid) ?? null))
