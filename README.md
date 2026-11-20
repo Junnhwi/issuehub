@@ -144,9 +144,20 @@ GitHub Actions의 자체 예약(`schedule`)은 정시 실행을 보장하지 않
 
 ## 배포 (Vercel)
 
-1. GitHub에 푸시 후 Vercel에서 Import (Framework: Next.js).
-2. Environment Variables에 `DEMO_MODE`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` 만 등록합니다. 웹앱은 secret key나 Anthropic 키가 **필요 없습니다**(수집·요약은 GitHub Actions에서만 실행).
-3. 데이터가 없는 상태로 공개하려면 `DEMO_MODE=true`로 두세요. 데모 배지가 모든 화면에 표시됩니다.
+1. <https://vercel.com/signup> → **Continue with GitHub**로 가입(Hobby 플랜, 무료)
+2. **Add New… → Project** → `issuehub` 저장소 **Import** (Framework Preset: Next.js 자동 인식)
+3. **Environment Variables**에 세 개만 등록합니다. 웹앱은 secret key·Gemini·ITAD 키가 **필요 없습니다**(수집·요약은 GitHub Actions에서만 실행).
+
+   | 이름 | 값 |
+   |---|---|
+   | `DEMO_MODE` | `false` |
+   | `NEXT_PUBLIC_SUPABASE_URL` | `.env.local`과 같은 값 |
+   | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | `.env.local`과 같은 값(`sb_publishable_...`) |
+
+4. **Deploy** → 1~2분 뒤 `https://<프로젝트>.vercel.app` 주소가 생깁니다. 이후 `main`에 푸시할 때마다 자동으로 다시 배포됩니다.
+5. (선택) Supabase 프로젝트가 서울(ap-northeast-2)이면 Vercel 프로젝트 Settings → Functions → Function Region을 **Seoul (icn1)**로 바꾸면 화면이 더 빨리 열립니다.
+
+데이터 없이 공개하려면 `DEMO_MODE=true`로 두세요. 데모 배지가 모든 화면에 표시됩니다.
 
 ## 디자인 시스템과 taste-skill
 
