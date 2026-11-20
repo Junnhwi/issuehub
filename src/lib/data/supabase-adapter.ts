@@ -129,7 +129,8 @@ function toRepo(r: RepoRow): Repository {
 const sanitize = (q: string) => q.replace(/[,()*%\\"]/g, " ").trim();
 
 function check<T>(res: { data: T; error: { code?: string; message: string } | null }): T {
-  if (res.error) throw new Error(`DB_ERROR:${res.error.code ?? "unknown"}`);
+  // 코드가 비어 있으면 네트워크 단계 실패(주소 오류·연결 불가) → 원인 메시지를 함께 남긴다(키는 포함되지 않음)
+  if (res.error) throw new Error(`DB_ERROR:${res.error.code || `NETWORK ${res.error.message.slice(0, 100)}`}`);
   return res.data;
 }
 
