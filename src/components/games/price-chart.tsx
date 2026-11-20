@@ -33,11 +33,11 @@ export function PriceChart({ points, sales, now }: { points: PricePoint[]; sales
   const stepPath = (pick: (p: PricePoint) => number) =>
     points.map((p, i) => `${i === 0 ? "M" : "H"}${x(times[i]).toFixed(1)}${i === 0 ? "," : ` V`}${y(pick(p)).toFixed(1)}`).join(" ") + ` H${x(t1).toFixed(1)}`;
 
-  // 할인율 라벨: 띠가 좁아도 표시하되, 앞 라벨과 34px 이상 떨어질 때만(겹침 방지)
+  // 할인율 라벨: 띠가 좁아도 표시하되, 앞 라벨과 42px 이상 떨어질 때만(겹침 방지)
   const labelX = sales.reduce<{ out: (number | null)[]; last: number }>(
     (acc, s) => {
       const mid = (x(Date.parse(s.start)) + x(s.end ? Date.parse(s.end) : t1)) / 2;
-      if (mid - acc.last < 34) return { out: [...acc.out, null], last: acc.last };
+      if (mid - acc.last < 42) return { out: [...acc.out, null], last: acc.last };
       return { out: [...acc.out, Math.min(Math.max(mid, PAD.left + 14), W - PAD.right - 14)], last: mid };
     },
     { out: [], last: -Infinity },
@@ -48,7 +48,7 @@ export function PriceChart({ points, sales, now }: { points: PricePoint[]; sales
   const xTicks = Array.from({ length: 5 }, (_, i) => t0 + ((t1 - t0) * i) / 4);
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label="한국 Steam 가격 추이 그래프. 아래 표에 같은 내용이 있습니다.">
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full min-w-[600px]" role="img" aria-label="한국 Steam 가격 추이 그래프. 아래 표에 같은 내용이 있습니다.">
       {yTicks.map((v) => (
         <g key={v}>
           <line x1={PAD.left} x2={W - PAD.right} y1={y(v)} y2={y(v)} stroke="var(--border)" strokeWidth={1} />

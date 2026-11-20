@@ -115,7 +115,7 @@ export default async function GamePage({ params }: Props) {
             <dl className="my-4 grid grid-cols-2 gap-x-6 gap-y-4 border-y border-line py-4 sm:grid-cols-4">
               <Stat
                 label="현재 가격"
-                value={g.price ?? formatWon(latest!.price)}
+                value={g.price?.replace("₩ ", "₩") ?? formatWon(latest!.price)}
                 hint={g.discountPct ? (g.discountEndsAt ? <>-{g.discountPct}% · {day(g.discountEndsAt)}까지</> : <>-{g.discountPct}% 세일 중</>) : "정가"}
               />
               <Stat label="정가" value={formatWon(latest!.regular)} />
@@ -138,7 +138,7 @@ export default async function GamePage({ params }: Props) {
               </span>
               <span className="text-muted">점에 마우스를 올리면 날짜와 가격이 보입니다</span>
             </div>
-            <div className="rounded-xl border border-line bg-surface p-3">
+            <div className="overflow-x-auto rounded-xl border border-line bg-surface p-3">
               <PriceChart points={history} sales={sales} now={now} />
             </div>
 
