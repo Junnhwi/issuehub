@@ -50,7 +50,7 @@ export default async function GamePage({ params }: Props) {
   const recent = [...sales].reverse();
 
   return (
-    <div className="mx-auto max-w-[860px]">
+    <div className="mx-auto max-w-[1040px]">
       <Link href="/games" className="mb-6 inline-flex h-9 items-center gap-1.5 rounded-lg text-sm font-medium text-muted hover:text-fg">
         <ArrowLeft className="size-4" aria-hidden />
         게임 동향으로
@@ -136,9 +136,9 @@ export default async function GamePage({ params }: Props) {
                 <span className="h-3 w-4 rounded-sm bg-accent-soft" aria-hidden />
                 세일 기간
               </span>
-              <span className="text-muted">점에 마우스를 올리면 날짜와 가격이 보입니다</span>
+              <span className="text-muted">그래프 위에서 마우스 휠을 굴리거나 아래 막대를 끌면 옆으로 이동합니다 · 점에 마우스를 올리면 날짜와 가격</span>
             </div>
-            <div className="overflow-x-auto rounded-xl border border-line bg-surface p-3">
+            <div className="rounded-xl border border-line bg-surface px-2 pt-3">
               <PriceChart points={history} sales={sales} now={now} />
             </div>
 

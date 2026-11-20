@@ -1,5 +1,5 @@
 import { stripHtml } from "../../src/lib/ingestion/normalize";
-import { releaseLabel } from "../../src/lib/games";
+import { keepRecentReleases, releaseLabel } from "../../src/lib/games";
 import type { GameList } from "../../src/types";
 import { fetchJson, mapLimit } from "../lib/http";
 
@@ -139,7 +139,8 @@ const SEARCH_FILTERS = { top_sellers: "topsellers", new_releases: "popularnew", 
 
 async function fetchSearchList(filter: string): Promise<number[]> {
   try {
-    const res = await fetchJson<{ items?: { logo?: string }[] }>(`${STORE}/search/results/?filter=${filter}&json=1&cc=kr&l=koreana&count=30&category1=998`);
+    // 인기 신작은 6개월 필터로 빠지는 게임이 있어 넉넉히 받는다
+    const res = await fetchJson<{ items?: { logo?: string }[] }>(`${STORE}/search/results/?filter=${filter}&json=1&cc=kr&l=koreana&count=100&category1=998`);
     return searchAppids(res.items ?? []);
   } catch {
     return [];
@@ -154,7 +155,9 @@ export function collectRanks(featured: Featured, mostPlayed: { appid: number }[]
   };
   const ids = (key: string) => (((featured[key] as { items?: FeaturedItem[] } | undefined)?.items ?? []).filter((x) => x.type === 0).map((x) => x.id));
   add("most_played", mostPlayed.map((r) => r.appid));
-  for (const list of ["top_sellers", "new_releases", "coming_soon"] as const) add(list, search[list]?.length ? search[list] : ids(list));
+  for (const list of ["top_sellers", "coming_soon"] as const) add(list, search[list]?.length ? search[list] : ids(list));
+  // 인기 신작은 6개월 필터 후 줄어들므로 후보를 100개까지 받아 둔다(최종 개수는 fetchSteamGames에서 limit)
+  [...new Set(search.new_releases?.length ? search.new_releases : ids("new_releases"))].slice(0, 100).forEach((id, i) => ranks.set(id, { ...ranks.get(id), new_releases: i + 1 }));
   return ranks;
 }
 
@@ -171,9 +174,11 @@ export async function fetchSteamGames(limit: number): Promise<NormalizedGame[]> 
   const peaks = new Map(chartRanks.map((r) => [r.appid, r.peak_in_game]));
   const ranks = collectRanks(featured, chartRanks, limit, { top_sellers: topSellers, new_releases: popularNew, coming_soon: popularSoon });
   const items = await fetchItems([...ranks.keys()]);
-  const games = items
-    .map((it) => normalizeStoreItem(it, tagNames, ranks.get(it.appid) ?? {}, peaks.get(it.appid) ?? null))
-    .filter((g): g is NormalizedGame => !!g);
+  const games = keepRecentReleases(
+    items.map((it) => normalizeStoreItem(it, tagNames, ranks.get(it.appid) ?? {}, peaks.get(it.appid) ?? null)).filter((g): g is NormalizedGame => !!g),
+    Date.now(),
+    limit,
+  ).filter((g) => Object.keys(g.ranks).length > 0);
   await mapLimit(games, 6, async (g) => {
     if (!g.comingSoon) g.currentPlayers = await currentPlayers(g.appid);
   });

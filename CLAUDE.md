@@ -12,7 +12,7 @@
 - `src/app/(site)/*` 페이지(Server Components), `src/app/api/*` 읽기 전용 REST
 - `src/lib/data/index.ts#getData()` 하나로 데모(`demo-adapter`)/Supabase(`supabase-adapter`) 전환. 필터·정렬 규칙은 `query.ts`, growth 규칙은 `growth.ts`(SQL view `repository_feed`와 같은 규칙 유지)
 - `scripts/` 수집기·요약기(tsx). `server-only` 모듈을 import하지 말 것(Node에서 throw)
-- 클라이언트 컴포넌트: 검색/필터/테마/북마크/토스트만
+- 클라이언트 컴포넌트: 검색/필터/테마/북마크/토스트/그래프 가로 스크롤(`chart-scroller`)만
 
 ## 디자인
 - UI 작업 시 `.claude/skills/design-taste-frontend-v1/SKILL.md` 규칙을 따른다(다이얼 3/3/7). 설계서와 충돌하면 설계서 우선.

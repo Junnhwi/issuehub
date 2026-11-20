@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { releaseLabel, reviewTone, salePeriods, sortGames } from "@/lib/games";
+import { keepRecentReleases, releaseLabel, reviewTone, salePeriods, sortGames } from "@/lib/games";
 import { toPriceRows } from "../scripts/sources/itad";
 import { collectRanks, normalizeStoreItem, searchAppids, type StoreItem } from "../scripts/sources/steam";
 import type { Game } from "@/types";
@@ -98,5 +98,29 @@ describe("price history", () => {
       new Map(), {}, null,
     )!;
     expect(g.discountEndsAt).toBe("2026-11-30T08:00:00.000Z");
+  });
+});
+
+describe("popular new releases", () => {
+  it("keeps only games released in the last 6 months and re-ranks them from 1", () => {
+    const now = Date.parse("2026-11-20T00:00:00Z");
+    const out = keepRecentReleases(
+      [
+        game({ appid: 1, releaseAt: "2017-12-21T00:00:00Z", ranks: { new_releases: 1, top_sellers: 1 } }),
+        game({ appid: 2, releaseAt: "2026-10-22T00:00:00Z", ranks: { new_releases: 2 } }),
+        game({ appid: 3, releaseAt: null, ranks: { new_releases: 3 } }),
+        game({ appid: 4, releaseAt: "2026-06-01T00:00:00Z", ranks: { new_releases: 4 } }),
+        game({ appid: 5, releaseAt: "2026-11-10T00:00:00Z", ranks: { new_releases: 5 } }),
+      ],
+      now,
+      2,
+    );
+    expect(out.map((g) => [g.appid, g.ranks])).toEqual([
+      [1, { top_sellers: 1 }],
+      [2, { new_releases: 1 }],
+      [3, {}],
+      [4, { new_releases: 2 }],
+      [5, {}],
+    ]);
   });
 });

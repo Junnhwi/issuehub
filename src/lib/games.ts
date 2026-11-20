@@ -3,7 +3,7 @@ import type { Game, GameList, PricePoint, SalePeriod } from "@/types";
 export const GAME_LISTS: { slug: GameList; label: string; description: string }[] = [
   { slug: "most_played", label: "지금 많이 하는 게임", description: "Steam 동시접속자 차트 상위(최근 일간 최고 동시접속 기준 순위)" },
   { slug: "top_sellers", label: "최고 인기", description: "Steam 판매 순위(한국 상점 기준)" },
-  { slug: "new_releases", label: "인기 신작", description: "Steam '인기 신규 출시' 순위" },
+  { slug: "new_releases", label: "인기 신작", description: "Steam '인기 신규 출시' 순위 중 최근 6개월 안에 출시된 게임" },
   { slug: "coming_soon", label: "출시 예정", description: "Steam '인기 출시 예정' 순위(관심이 많이 모인 순)" },
 ];
 
@@ -53,3 +53,24 @@ export function salePeriods(points: PricePoint[]): SalePeriod[] {
 }
 
 export const formatWon = (n: number) => `₩${Math.round(n).toLocaleString("ko-KR")}`;
+
+export const NEW_RELEASE_DAYS = 183;
+
+/**
+ * 인기 신작 목록에서 출시 6개월이 지난(또는 출시일을 모르는) 게임을 빼고 순위를 1부터 다시 매긴다.
+ * Steam '인기 신규 출시'에는 대형 업데이트로 다시 올라온 오래된 게임도 섞이기 때문.
+ */
+export function keepRecentReleases<T extends { releaseAt: string | null; ranks: Partial<Record<GameList, number>> }>(games: T[], now = Date.now(), max = Infinity): T[] {
+  const cutoff = now - NEW_RELEASE_DAYS * 86_400_000;
+  const recent = games
+    .filter((g) => g.ranks.new_releases !== undefined && g.releaseAt && Date.parse(g.releaseAt) >= cutoff && Date.parse(g.releaseAt) <= now)
+    .sort((a, b) => a.ranks.new_releases! - b.ranks.new_releases!)
+    .slice(0, max);
+  const rank = new Map(recent.map((g, i) => [g, i + 1]));
+  return games.map((g) => {
+    if (g.ranks.new_releases === undefined) return g;
+    const rest = { ...g.ranks };
+    delete rest.new_releases;
+    return { ...g, ranks: rank.has(g) ? { ...rest, new_releases: rank.get(g)! } : rest };
+  });
+}
