@@ -53,3 +53,6 @@ Next 16.4, React 19.3, Tailwind 4.3, zod 4, supabase-js 2, @anthropic-ai/sdk 1.1
 
 ### D18. 정시 수집은 Supabase pg_cron이 workflow_dispatch로 요청 (2026-11-20)
 41분 예약도 첫 두 회차(03:41, 04:41 UTC)가 실행되지 않았다. 워크플로는 active였고 GitHub 장애 공지도 없었다. 즉 이 저장소에서는 GitHub `schedule`을 믿을 수 없다. 수집 코드(Node)는 그대로 Actions에서 돌리고, 시계만 Supabase pg_cron으로 옮겼다: 매시 20분에 pg_net이 GitHub REST API로 `workflow_dispatch`를 보낸다(0005). 토큰은 Fine-grained PAT(issuehub 저장소, Actions 쓰기만)를 Supabase Vault에 두고 저장소에는 커밋하지 않는다. 두 실행이 겹쳐도 `concurrency`로 순서대로 돌고 upsert·pending 처리라 중복 저장·중복 요약이 없으므로 GitHub 예약(41분)은 예비로 남긴다.
+
+### D19. Steam 게임 동향은 공개 API만, 평가는 Steam 값 그대로 (2026-11-20)
+"어떤 게임이 만들어지고 유행하는지"를 보려고 Steam 목록 4개(동시접속 상위, 최고 인기, 신규 출시, 곧 출시)를 매 수집마다 가져온다. 키가 필요 없는 공개 엔드포인트만 쓴다: 상점 `featuredcategories`, `ISteamChartsService/GetMostPlayedGames`, 상세는 `IStoreBrowseService/GetItems`로 50개씩 한 번에(한국어 소개·평가 요약·태그·가격·이미지), 현재 동시접속은 `GetNumberOfCurrentPlayers`. 상점의 `appreviews` JSON은 현재 상점 첫 화면으로 리다이렉트되어 쓰지 않았다. 평가는 Steam 표기("매우 긍정적")·긍정 비율·평가 수를 그대로 보여 주고 자체 점수를 만들지 않는다. 출시일은 Steam 상점과 같은 미국 태평양 시간 기준 날짜로 표기한다. 목록 순위는 `games.ranks`(jsonb)에 마지막 수집 기준으로 저장하고, 이번 수집에 없는 게임은 순위를 비워 화면에서 빠지게 한다(행은 남김). 신규 출시 목록은 Steam 순서가 주목도와 무관해 평가 수 순으로 정렬한다. 한국어 소개가 없는 게임만 요약 단계에서 AI로 번역한다(`description_ko` null=대기, ''=설명 없음).

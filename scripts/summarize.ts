@@ -6,7 +6,7 @@
  */
 import { resolveProvider, ProviderError } from "../src/lib/ai/provider";
 import { hasEnoughContent, hasEnoughRepoDescription, type ValidArticleItem } from "../src/lib/ai/schema";
-import { processArticleBatch, processRepoBatch, type ArticleInput, type ItemResult, type RepoInput } from "../src/lib/ai/summarize";
+import { processArticleBatch, processGameBatch, processRepoBatch, type ArticleInput, type GameInput, type ItemResult, type RepoInput } from "../src/lib/ai/summarize";
 import { getWriteClient } from "./lib/db";
 import { intEnv, loadEnv } from "./lib/env";
 
@@ -62,7 +62,17 @@ async function main() {
     .limit(dryRun ? 1000 : limit);
   if (repoError) throw new Error(`DB_SELECT_REPOS:${repoError.code}`);
 
+  // 게임: 한국어 설명이 없는 것만(null=대기). 테이블이 없으면(0006 미적용) 건너뜀
+  const { data: gameRows, error: gameError } = await db
+    .from("games")
+    .select("appid, name, description")
+    .is("description_ko", null)
+    .order("last_synced_at", { ascending: false })
+    .limit(dryRun ? 1000 : limit);
+  if (gameError) console.warn(`! games 조회 실패(${gameError.code}) → 게임 설명 번역 건너뜀`);
+
   const articles = rows ?? [];
+  const games = gameRows ?? [];
   const repoRows = repos ?? [];
 
   if (dryRun) {
@@ -71,13 +81,14 @@ async function main() {
     console.log("번역·요약 미리보기 (AI 호출·DB 쓰기 없음)");
     console.log(`  기사   대기=${articles.length}  제목·발췌 번역=${articles.length}  요약까지=${enough}  번역만(근거 부족)=${articles.length - enough}`);
     console.log(`  저장소 미처리=${repoRows.length}  한국어 소개 대상=${repoReady}  설명 부족=${repoRows.length - repoReady}`);
+    console.log(`  게임   설명 번역 대기=${games.length}`);
     console.log(`  1회 실행: 기사 최대 ${Math.min(limit, remaining)}건 + 저장소 최대 ${limit}건, 요청당 ${batchSize}건씩 묶음 · 이번 달 남은 한도 ${remaining}/${monthlyCap}`);
     console.log(cfg ? `  제공자: ${cfg.name} (${cfg.model}) → npm run summarize 로 실행` : "  제공자 없음: AI_SUMMARIZATION_ENABLED=true 와 GEMINI_API_KEY 필요");
     return;
   }
   if (!cfg) return;
 
-  console.log(`AI translate+summarize provider=${cfg.name} model=${cfg.model} articles=${articles.length} repos=${repoRows.length} batch=${batchSize}`);
+  console.log(`AI translate+summarize provider=${cfg.name} model=${cfg.model} articles=${articles.length} repos=${repoRows.length} games=${games.length} batch=${batchSize}`);
   if (remaining === 0) console.log(`  기사: 월 상한(${monthlyCap}) 도달 → 건너뜀`);
 
   const inputs: ArticleInput[] = articles.map((r) => ({
@@ -89,7 +100,7 @@ async function main() {
     publishedAt: r.published_at,
   }));
   const attemptsById = new Map(articles.map((r) => [r.id, r.summary_attempts ?? 0]));
-  const stats = { completed: 0, translatedOnly: 0, failed: 0, deferred: 0, repos: 0 };
+  const stats = { completed: 0, translatedOnly: 0, failed: 0, deferred: 0, repos: 0, games: 0 };
   let first = true;
   const pace = async () => {
     if (!first) await sleep(cfg.intervalMs);
@@ -167,8 +178,29 @@ async function main() {
     }
   }
 
+  const gameInputs: GameInput[] = [];
+  for (const g of games) {
+    if (!g.description) await db.from("games").update({ description_ko: "" }).eq("appid", g.appid);
+    else gameInputs.push({ key: String(g.appid), name: g.name, description: g.description });
+  }
+  for (const batch of chunk(gameInputs, batchSize)) {
+    await pace();
+    let res: Map<string, ItemResult<string>>;
+    try {
+      res = await processGameBatch(cfg, batch);
+    } catch (e) {
+      if (e instanceof ProviderError && !e.retryable) throw e;
+      continue; // 일시 오류: null로 남겨 다음 실행에서 재시도
+    }
+    for (const [key, r] of res) {
+      if (!r.ok) continue;
+      await db.from("games").update({ description_ko: r.value }).eq("appid", Number(key));
+      stats.games++;
+    }
+  }
+
   console.log(
-    `done 기사: 요약 완료 ${stats.completed} · 번역만 ${stats.translatedOnly} · 실패 ${stats.failed} · 다음에 재시도 ${stats.deferred} / 저장소 한국어 소개 ${stats.repos}`,
+    `done 기사: 요약 완료 ${stats.completed} · 번역만 ${stats.translatedOnly} · 실패 ${stats.failed} · 다음에 재시도 ${stats.deferred} / 저장소 한국어 소개 ${stats.repos} / 게임 설명 번역 ${stats.games}`,
   );
 }
 

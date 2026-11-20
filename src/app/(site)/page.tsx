@@ -5,6 +5,7 @@ import { formatCount, isOlderThan } from "@/lib/utils";
 import { ArticleCard } from "@/components/articles/article-card";
 import { ArticleList, ArticleRow, TierLabel } from "@/components/articles/article-row";
 import { RepoCard } from "@/components/github/repo-card";
+import { GameCompactRow } from "@/components/games/game-row";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LocalTime } from "@/components/ui/local-time";
 import { SectionTitle } from "@/components/ui/page-header";
@@ -61,13 +62,14 @@ function RailSection({ id, title, action, note, children }: { id: string; title:
 
 export default async function DashboardPage() {
   const data = getData();
-  const [stats, popular, latest, repos, topics, sources] = await Promise.all([
+  const [stats, popular, latest, repos, topics, sources, games] = await Promise.all([
     data.getStats(),
     data.listArticles({ period: "7d", sort: "popular", limit: 4 }),
     data.listArticles({ period: "all", sort: "latest", limit: 10 }),
     data.listRepos({ sort: "growth", limit: 5 }),
     data.listTopics(),
     data.listSources(),
+    data.listGames("most_played"),
   ]);
   const [featured, ...others] = popular.items;
   const topTopics = [...topics].sort((a, b) => (b.articleCount ?? 0) - (a.articleCount ?? 0));
@@ -164,6 +166,25 @@ export default async function DashboardPage() {
               ))}
             </ul>
           </RailSection>
+
+          {games.items.length > 0 && (
+            <RailSection
+              id="rail-games"
+              title="Steam 지금 많이 하는 게임"
+              note="동시접속자 · 긍정 평가 비율 (Steam 공개 값)"
+              action={
+                <Link href="/games" className="text-xs font-medium text-accent-fg hover:underline">
+                  더 보기
+                </Link>
+              }
+            >
+              <ul className="-mx-3">
+                {games.items.slice(0, 5).map((g, i) => (
+                  <GameCompactRow key={g.appid} game={g} rank={i + 1} />
+                ))}
+              </ul>
+            </RailSection>
+          )}
 
           <RailSection id="rail-topics" title="자주 등장하는 토픽">
             <ul className="space-y-0.5">

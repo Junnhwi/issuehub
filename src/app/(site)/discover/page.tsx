@@ -28,7 +28,7 @@ export default async function DiscoverPage({ searchParams }: { searchParams: SP 
       label: "출처",
       type: "select",
       defaultValue: "",
-      options: [{ value: "", label: "전체" }, ...sources.filter((s) => s.kind !== "github").map((s) => ({ value: s.slug, label: s.name }))],
+      options: [{ value: "", label: "전체" }, ...sources.filter((s) => s.kind !== "github" && s.kind !== "steam").map((s) => ({ value: s.slug, label: s.name }))],
     },
     {
       name: "tier",

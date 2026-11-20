@@ -1,5 +1,6 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { NormalizedArticle, NormalizedRepo } from "../../src/lib/ingestion/types";
+import type { NormalizedGame } from "../sources/steam";
 
 /** 수집기 전용 쓰기 클라이언트(secret key). 절대 클라이언트 번들에서 import하지 않는다. */
 export function getWriteClient(): SupabaseClient | null {
@@ -12,7 +13,7 @@ export function getWriteClient(): SupabaseClient | null {
 export interface SourceRow {
   id: string;
   slug: string;
-  kind: "github" | "hackernews" | "rss";
+  kind: "github" | "hackernews" | "rss" | "steam";
   feed_url: string | null;
 }
 
@@ -109,6 +110,35 @@ export async function upsertRepos(db: SupabaseClient, repos: NormalizedRepo[], t
       .upsert({ repository_id: data.id, stars_count: r.stars, captured_date: today }, { onConflict: "repository_id,captured_date" });
     if (snap.error) failed++;
     else saved++;
+  }
+  return { saved, failed };
+}
+
+/**
+ * 게임 upsert(appid 기준). 이번 수집에 없는 게임은 목록 순위를 비워 화면에서 빠지게 한다(행은 남김).
+ * description_ko는 원문이 한국어일 때만 보낸다. 아니면 기존 번역을 덮어쓰지 않는다.
+ */
+export async function upsertGames(db: SupabaseClient, games: NormalizedGame[]): Promise<{ saved: number; failed: number }> {
+  let saved = 0;
+  let failed = 0;
+  const now = new Date().toISOString();
+  for (const g of games) {
+    const row: Record<string, unknown> = {
+      appid: g.appid, name: g.name, store_url: g.storeUrl, header_image: g.headerImage, description: g.description,
+      tags: g.tags, developers: g.developers, release_at: g.releaseAt, release_label: g.releaseLabel, coming_soon: g.comingSoon,
+      is_free: g.isFree, price: g.price, discount_pct: g.discountPct, review_label: g.reviewLabel, review_percent: g.reviewPercent,
+      review_count: g.reviewCount, current_players: g.currentPlayers, peak_players: g.peakPlayers, ranks: g.ranks, last_synced_at: now,
+    };
+    if (g.descriptionKo) row.description_ko = g.descriptionKo;
+    const { error } = await db.from("games").upsert(row, { onConflict: "appid" });
+    if (error) {
+      failed++;
+      console.warn(`  ! game upsert failed appid=${g.appid} code=${error.code}`);
+    } else saved++;
+  }
+  if (games.length) {
+    const { error } = await db.from("games").update({ ranks: {} }).not("appid", "in", `(${games.map((g) => g.appid).join(",")})`);
+    if (error) console.warn(`  ! game rank reset failed code=${error.code}`);
   }
   return { saved, failed };
 }

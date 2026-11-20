@@ -1,4 +1,4 @@
-import { Bookmark, Compass, GitFork, Hash, Info, LayoutDashboard, type LucideIcon } from "lucide-react";
+import { Bookmark, Compass, Gamepad2, GitFork, Hash, Info, LayoutDashboard, type LucideIcon } from "lucide-react";
 
 export interface NavItem {
   href: string;
@@ -10,6 +10,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Overview", icon: LayoutDashboard },
   { href: "/discover", label: "Discover", icon: Compass },
   { href: "/github", label: "GitHub", icon: GitFork },
+  { href: "/games", label: "Games", icon: Gamepad2 },
   { href: "/topics", label: "Topics", icon: Hash },
   { href: "/saved", label: "Saved", icon: Bookmark },
   { href: "/about", label: "About", icon: Info },

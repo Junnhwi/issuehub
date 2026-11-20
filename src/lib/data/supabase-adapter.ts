@@ -1,7 +1,8 @@
 import "server-only";
 import { TOPICS } from "@/config/topics";
 import { getReadClient } from "@/lib/db/supabase";
-import type { Article, Repository, Source, SourceKind, SourceTier, SummaryStatus } from "@/types";
+import { sortGames } from "@/lib/games";
+import type { Article, Game, GameList, Repository, Source, SourceKind, SourceTier, SummaryStatus } from "@/types";
 import type { DataAdapter } from "./types";
 import { periodStart } from "./query";
 
@@ -52,6 +53,21 @@ interface RepoRow {
   growth_from: string | null;
   growth_to: string | null;
 }
+
+interface GameRow {
+  appid: number; name: string; store_url: string; header_image: string | null; description: string | null; description_ko: string | null;
+  tags: string[]; developers: string[]; release_at: string | null; release_label: string | null; coming_soon: boolean; is_free: boolean;
+  price: string | null; discount_pct: number | null; review_label: string | null; review_percent: number | null; review_count: number | null;
+  current_players: number | null; peak_players: number | null; ranks: Partial<Record<GameList, number>>; last_synced_at: string;
+}
+
+const toGame = (r: GameRow): Game => ({
+  appid: r.appid, name: r.name, storeUrl: r.store_url, headerImage: r.header_image, description: r.description,
+  descriptionKo: r.description_ko || null, tags: r.tags ?? [], developers: r.developers ?? [], releaseAt: r.release_at,
+  releaseLabel: r.release_label, comingSoon: r.coming_soon, isFree: r.is_free, price: r.price, discountPct: r.discount_pct,
+  review: r.review_label && r.review_percent !== null && r.review_count ? { label: r.review_label, percent: r.review_percent, count: r.review_count } : null,
+  currentPlayers: r.current_players, peakPlayers: r.peak_players, ranks: r.ranks ?? {}, lastSyncedAt: r.last_synced_at, isDemo: false,
+});
 
 function hnDiscussion(r: ArticleRow): string | null {
   if (r.source_kind !== "hackernews" || !r.source_item_id) return null;
@@ -206,6 +222,15 @@ export const supabaseAdapter: DataAdapter = {
       articleCount: topicRows.find((r) => r.slug === t.slug)?.article_topics[0]?.count ?? null,
       repoCount: repoRows.filter((r) => r.topic_slugs.includes(t.slug)).length,
     }));
+  },
+
+  async listGames(list) {
+    const db = getReadClient();
+    const res = await db.from("games").select("*").not(`ranks->${list}`, "is", null).limit(100);
+    if (res.error?.code === "PGRST205") return { items: [], asOf: null }; // 0006 미적용: 빈 목록으로 안내
+    const rows = check(res) as GameRow[];
+    const items = sortGames(rows.map(toGame), list);
+    return { items, asOf: items.reduce<string | null>((m, g) => (!m || g.lastSyncedAt > m ? g.lastSyncedAt : m), null) };
   },
 
   async listSources() {

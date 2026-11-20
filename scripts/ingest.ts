@@ -6,12 +6,13 @@
  * 실패한 소스가 있어도 다른 소스는 계속 진행하고, 기존 데이터는 삭제하지 않는다.
  */
 import { dedupeArticles, type NormalizedArticle } from "../src/lib/ingestion/types";
-import { finishRun, getWriteClient, loadSources, startRun, upsertArticles, upsertRepos, type SourceRow } from "./lib/db";
+import { finishRun, getWriteClient, loadSources, startRun, upsertArticles, upsertGames, upsertRepos, type SourceRow } from "./lib/db";
 import { intEnv, loadEnv } from "./lib/env";
 import { errorCode } from "./lib/http";
 import { fetchGithubRepos } from "./sources/github";
 import { fetchHackerNews } from "./sources/hackernews";
 import { fetchRss } from "./sources/rss";
+import { fetchSteamGames } from "./sources/steam";
 
 loadEnv();
 
@@ -27,6 +28,7 @@ const DEFAULT_SOURCES: SourceRow[] = [
   { id: "-", slug: "github-blog", kind: "rss", feed_url: "https://github.blog/feed/" },
   { id: "-", slug: "nextjs-blog", kind: "rss", feed_url: "https://nextjs.org/feed.xml" },
   { id: "-", slug: "cloudflare-blog", kind: "rss", feed_url: "https://blog.cloudflare.com/rss/" },
+  { id: "-", slug: "steam", kind: "steam", feed_url: null },
 ];
 
 function sample(items: NormalizedArticle[]) {
@@ -60,6 +62,16 @@ async function main() {
         if (db) await finishRun(db, runId, res.failed ? "partial" : "success", repos.length, res.saved, res.failed ? "PARTIAL_UPSERT" : null);
         console.log(`✓ ${source.slug} fetched=${repos.length} saved=${res.saved} failed=${res.failed} rateRemaining=${rateRemaining ?? "?"} ${Date.now() - started}ms`);
         if (dryRun) for (const r of repos.slice(0, 3)) console.log(`    - ${r.fullName} ★${r.stars} [${r.topicSlugs.join(",")}]`);
+        continue;
+      }
+      if (source.kind === "steam") {
+        const games = await fetchSteamGames(limit);
+        const res = db ? await upsertGames(db, games) : { saved: 0, failed: 0 };
+        if (db) await finishRun(db, runId, res.failed ? "partial" : "success", games.length, res.saved, res.failed ? "PARTIAL_UPSERT" : null);
+        console.log(`✓ ${source.slug} fetched=${games.length} saved=${res.saved} failed=${res.failed} ${Date.now() - started}ms`);
+        if (dryRun)
+          for (const g of games.slice(0, 4))
+            console.log(`    - ${g.name} [${Object.keys(g.ranks).join(",")}] ${g.reviewLabel ?? "평가 없음"} ${g.reviewPercent ?? "-"}% (${g.reviewCount ?? 0}) 동접=${g.currentPlayers ?? "-"} ${g.descriptionKo ? "한국어 설명" : "번역 필요"}`);
         continue;
       }
       const raw =

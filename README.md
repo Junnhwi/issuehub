@@ -8,9 +8,10 @@ Next.js App Router 기반 포트폴리오 프로젝트입니다. API 키나 DB �
 
 | 영역 | 내용 |
 |---|---|
-| 화면 | `/` 대시보드, `/discover` 이슈 탐색, `/articles/[id]` 상세, `/github` 저장소, `/topics`·`/topics/[slug]`, `/saved`, `/about` |
+| 화면 | `/` 대시보드, `/discover` 이슈 탐색, `/articles/[id]` 상세, `/github` 저장소, `/games` Steam 게임 동향, `/topics`·`/topics/[slug]`, `/saved`, `/about` |
 | 디자인 | 다크(기본)/라이트 테마(localStorage 유지), 데스크톱 236px 사이드바·태블릿 아이콘 사이드바·모바일 하단 내비, Pretendard 폰트, 스켈레톤·빈 상태·오류 재시도·토스트, `Ctrl/Cmd+K` 검색 |
 | 탐색 | 검색어·토픽·출처·출처 유형·기간·정렬을 URL 쿼리에 저장(공유/뒤로가기), cursor 페이지네이션 |
+| 게임 | Steam 동시접속 상위·최고 인기·신규 출시·출시 예정. 한국어 소개(없으면 AI 번역), Steam 사용자 평가(표기·긍정 비율·평가 수), 동시접속자, 태그, 가격·할인, 출시일, 상점 링크 |
 | 화제도 | HN 점수·댓글 수와 공개 기준(300점/150댓글=큰 화제, 100점/50댓글=화제) 칩, 점수순·댓글순 정렬 |
 | 학습 노트 | 상세 페이지 **노션용 복사**: 원문·토론 링크, 반응 수치, AI 요약(완료된 것만), 메모 칸을 Markdown으로 복사 |
 | 북마크 | localStorage 기반 기사/저장소 저장, 탭·검색·토픽 필터·삭제 |
@@ -52,6 +53,7 @@ npm run dev
    3. [`0003_excerpt_translation.sql`](supabase/migrations/0003_excerpt_translation.sql) — 발췌 한국어 번역 열
    4. [`0004_comments_count.sql`](supabase/migrations/0004_comments_count.sql) — HN 댓글 수 열(화제도 표시)
    5. [`0005_hourly_ingest_trigger.sql`](supabase/migrations/0005_hourly_ingest_trigger.sql) — 매시 20분 자동 수집 요청(선택, 아래 "정시 자동 수집" 참고)
+   6. [`0006_steam_games.sql`](supabase/migrations/0006_steam_games.sql) — Steam 게임 테이블과 `steam` 출처
 3. **키 확인** — Project Settings → API Keys에서 Project URL, Publishable key, Secret key를 복사합니다.
 4. **GitHub 토큰(선택, 권장)** — GitHub Settings → Developer settings → Fine-grained token(권한 없음, public repo 읽기만)을 발급합니다. 없으면 검색 API 한도가 분당 10회로 줄어듭니다.
 5. **`.env.local` 작성**
@@ -170,3 +172,4 @@ GitHub Actions의 자체 예약(`schedule`)은 정시 실행을 보장하지 않
 | 요약이 계속 `요약 대기` | `AI_SUMMARIZATION_ENABLED=true` + `GEMINI_API_KEY` 설정 후 `npm run summarize` |
 | `PGRST204` (excerpt_ko) | `0003_excerpt_translation.sql` 미실행 |
 | `npm run ingest`의 기사 저장이 모두 실패(`PGRST204`) | `0004_comments_count.sql` 미실행 |
+| `✖ steam error=...`, 게임 화면이 비어 있음 | `0006_steam_games.sql` 미실행 |

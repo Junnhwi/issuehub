@@ -1,4 +1,4 @@
-import type { Article, Repository, Source, SourceRef, SummaryStatus } from "@/types";
+import type { Article, Game, Repository, Source, SourceRef, SummaryStatus } from "@/types";
 import { computeGrowth } from "./growth";
 import { scoreRelevance } from "@/lib/ingestion/normalize";
 
@@ -353,3 +353,28 @@ export const DEMO_REPOS: Repository[] = REPOS.map((r, i) => {
 });
 
 export const DEMO_LAST_SYNC = hoursAgo(1);
+
+/** 데모 게임: 가상의 게임이며 실제 Steam 데이터가 아님(링크 example.com, 이미지 없음) */
+const demoGame = (appid: number, name: string, descriptionKo: string, over: Partial<Game>): Game => ({
+  appid, name, storeUrl: `https://example.com/demo/games/${appid}`, headerImage: null, description: descriptionKo, descriptionKo,
+  tags: [], developers: ["데모 스튜디오"], releaseAt: null, releaseLabel: null, comingSoon: false, isFree: false, price: "₩ 19,800",
+  discountPct: null, review: null, currentPlayers: null, peakPlayers: null, ranks: {}, lastSyncedAt: hoursAgo(1), isDemo: true, ...over,
+});
+
+export const DEMO_GAMES: Game[] = [
+  demoGame(1, "[데모] Starfold Tactics", "가상의 턴제 우주 전략 게임입니다. 화면 구성을 보여 주기 위한 예시입니다.", {
+    tags: ["전략", "턴제", "우주"], review: { label: "매우 긍정적", percent: 91, count: 12840 }, currentPlayers: 18420, peakPlayers: 22100,
+    releaseLabel: "2026년 3월 2일 출시", ranks: { most_played: 1, top_sellers: 2 },
+  }),
+  demoGame(2, "[데모] Lantern Hollow", "가상의 협동 생존 어드벤처입니다. 실제 게임이 아닙니다.", {
+    tags: ["생존", "협동", "오픈 월드"], review: { label: "대체로 긍정적", percent: 76, count: 3410 }, currentPlayers: 6120, peakPlayers: 9050,
+    releaseLabel: "2026년 11월 12일 출시", discountPct: 20, price: "₩ 15,840", ranks: { most_played: 2, new_releases: 1, top_sellers: 1 },
+  }),
+  demoGame(3, "[데모] Pixel Courier", "가상의 배달 퍼즐 게임입니다. 평가 수치도 예시입니다.", {
+    tags: ["퍼즐", "캐주얼", "픽셀 그래픽"], review: { label: "복합적", percent: 58, count: 412 }, currentPlayers: 340,
+    releaseLabel: "2026년 11월 17일 출시", isFree: true, price: "무료", ranks: { new_releases: 2 },
+  }),
+  demoGame(4, "[데모] Ironroot", "가상의 로그라이트 액션 게임입니다. 출시 예정 예시입니다.", {
+    tags: ["로그라이트", "액션"], comingSoon: true, releaseLabel: "2027년 1분기 출시 예정", price: null, ranks: { coming_soon: 1 },
+  }),
+];

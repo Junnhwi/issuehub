@@ -34,6 +34,9 @@ export const RepoItemSchema = z.object({
 });
 export const RepoBatchSchema = z.object({ items: z.array(RepoItemSchema) });
 
+export const GameItemSchema = z.object({ id: z.string(), descriptionKo: z.string() });
+export const GameBatchSchema = z.object({ items: z.array(GameItemSchema) });
+
 export type SummaryFields = Pick<ArticleItemOutput, keyof typeof summaryFields>;
 
 export interface ValidSummary {
@@ -107,6 +110,14 @@ export function validateRepoSummary(out: { summaryKo: string }): string {
   const sentences = countSentences(summaryKo);
   if (sentences < 1 || sentences > 2) throw new SummaryValidationError(`REPO_SENTENCES_${sentences}`);
   return summaryKo;
+}
+
+/** 게임 설명 번역 검증: 비어 있지 않고 한글이 있어야 한다 */
+export function validateGameDescription(out: { descriptionKo: string }): string {
+  const text = clean(out.descriptionKo, 500);
+  if (!text) throw new SummaryValidationError("EMPTY_GAME_DESCRIPTION");
+  if (!/[가-힣]/.test(text)) throw new SummaryValidationError("NOT_KOREAN");
+  return text;
 }
 
 /** 저장소 설명이 요약할 만큼 있는지(30자 이상) */

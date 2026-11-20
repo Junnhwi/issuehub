@@ -1,4 +1,4 @@
-import type { Article, Page, Repository, Source, Stats, TopicWithCounts } from "@/types";
+import type { Article, Game, GameList, Page, Repository, Source, Stats, TopicWithCounts } from "@/types";
 import type { ArticleListParams, RepoListParams } from "@/lib/validation/params";
 
 export interface DataAdapter {
@@ -10,4 +10,6 @@ export interface DataAdapter {
   listTopics(): Promise<TopicWithCounts[]>;
   listSources(): Promise<Source[]>;
   getStats(): Promise<Stats>;
+  /** Steam 목록 하나(Steam 순위 또는 목록 규칙대로 정렬) */
+  listGames(list: GameList): Promise<{ items: Game[]; asOf: string | null }>;
 }

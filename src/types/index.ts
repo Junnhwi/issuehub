@@ -1,5 +1,5 @@
 export type SourceTier = "official" | "community" | "independent";
-export type SourceKind = "github" | "hackernews" | "rss" | "demo";
+export type SourceKind = "github" | "hackernews" | "rss" | "steam" | "demo";
 export type SummaryStatus = "pending" | "completed" | "failed" | "skipped";
 export type DataMode = "demo" | "live";
 
@@ -84,6 +84,41 @@ export interface Repository {
   lastSyncedAt: string;
   /** 서로 다른 날짜의 스냅샷이 2개 이상일 때만 값이 있음 */
   growth: StarGrowth | null;
+  isDemo: boolean;
+}
+
+export type GameList = "most_played" | "top_sellers" | "new_releases" | "coming_soon";
+
+export interface GameReview {
+  /** Steam 표기 그대로(예: "매우 긍정적") */
+  label: string;
+  percent: number;
+  count: number;
+}
+
+export interface Game {
+  appid: number;
+  name: string;
+  storeUrl: string;
+  headerImage: string | null;
+  description: string | null;
+  /** 한국어 설명(Steam 한국어 설명 또는 AI 번역). 없으면 null */
+  descriptionKo: string | null;
+  tags: string[];
+  developers: string[];
+  releaseAt: string | null;
+  releaseLabel: string | null;
+  comingSoon: boolean;
+  isFree: boolean;
+  price: string | null;
+  discountPct: number | null;
+  /** 평가가 하나도 없으면 null */
+  review: GameReview | null;
+  currentPlayers: number | null;
+  peakPlayers: number | null;
+  /** 마지막 수집 기준 목록별 순위 */
+  ranks: Partial<Record<GameList, number>>;
+  lastSyncedAt: string;
   isDemo: boolean;
 }
 

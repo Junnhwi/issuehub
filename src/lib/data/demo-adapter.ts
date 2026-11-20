@@ -1,6 +1,7 @@
 import { TOPICS } from "@/config/topics";
 import type { DataAdapter } from "./types";
-import { DEMO_ARTICLES, DEMO_LAST_SYNC, DEMO_REPOS, DEMO_SNAPSHOTS, DEMO_SOURCES } from "./demo-data";
+import { sortGames } from "@/lib/games";
+import { DEMO_ARTICLES, DEMO_GAMES, DEMO_LAST_SYNC, DEMO_REPOS, DEMO_SNAPSHOTS, DEMO_SOURCES } from "./demo-data";
 import { filterArticles, filterRepos, paginate } from "./query";
 
 export const demoAdapter: DataAdapter = {
@@ -32,6 +33,9 @@ export const demoAdapter: DataAdapter = {
   },
   async listSources() {
     return DEMO_SOURCES;
+  },
+  async listGames(list) {
+    return { items: sortGames(DEMO_GAMES, list), asOf: DEMO_LAST_SYNC };
   },
   async getStats() {
     const since = Date.now() - 24 * 3600_000;

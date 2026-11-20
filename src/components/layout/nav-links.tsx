@@ -48,7 +48,7 @@ export function MobileTabBar() {
   const items = NAV_ITEMS.filter((i) => i.href !== "/about");
   return (
     <nav aria-label="하단 메뉴" className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
-      <ul className="grid grid-cols-5">
+      <ul className="grid grid-cols-6">
         {items.map(({ href, label, icon: Icon }) => {
           const active = isActive(pathname, href);
           return (
