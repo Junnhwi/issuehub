@@ -78,7 +78,7 @@ export default async function DiscoverPage({ searchParams }: { searchParams: SP 
               <>
                 <span aria-hidden>·</span>
                 <span>
-                  최종 업데이트 <LocalTime iso={page.asOf} mode="clock" />
+                  최종 업데이트 <LocalTime iso={page.asOf} />
                 </span>
               </>
             )}

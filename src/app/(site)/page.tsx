@@ -33,7 +33,7 @@ function SyncStatus({ stats }: { stats: Stats }) {
       {last && !stale ? <CheckCircle2 className="size-4 text-success" aria-hidden /> : <TriangleAlert className="size-4 text-warning" aria-hidden />}
       {last ? (
         <span>
-          마지막 성공 수집: <LocalTime iso={last} mode="clock" className="font-medium text-fg" />
+          마지막 성공 수집 <LocalTime iso={last} className="font-medium text-fg" />
           {stale && " · 지연됨"}
         </span>
       ) : (

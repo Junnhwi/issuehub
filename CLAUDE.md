@@ -31,4 +31,4 @@
 - 2026-11-19: Stage 1~4 1차 구현 완료(데모 모드 전 화면, API, 수집기 dry-run 실검증, AI 요약기, Actions, 테스트 36개, build 통과). 실 Supabase/Anthropic 연결은 미검증(키 없음).
 - 2026-11-19: GitHub 원격 연결, CI 통과. 실제 Supabase 연결 시 42501 발견 → 0002_api_grants.sql 추가(사용자 적용 대기).
 - 2026-11-19: Supabase 실데이터 연결·Actions 수집 확인. taste-skill v1 설치·적용(리스트형 재구성, Geist 폰트), 저장소 한국어 요약·summarize --dry-run 추가.
-- 2026-11-20: Gemini 무료 번역·요약 운영, 수집 매시 41분, 화제도(HN 점수·댓글)·댓글순 정렬·노션용 복사 추가. 0004_comments_count.sql은 푸시 전에 적용해야 수집이 깨지지 않음.
+- 2026-11-20: Gemini 무료 번역·요약 운영, 수집 매시 20분(Supabase pg_cron → workflow_dispatch, GitHub 예약 41분은 예비), 화제도(HN 점수·댓글)·댓글순 정렬·노션용 복사 추가. 0004_comments_count.sql은 푸시 전에 적용해야 수집이 깨지지 않음.

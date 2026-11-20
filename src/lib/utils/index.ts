@@ -23,16 +23,6 @@ export function formatDate(iso: string, timeZone?: string) {
   return new Intl.DateTimeFormat("ko-KR", { year: "numeric", month: "long", day: "numeric", timeZone }).format(new Date(iso));
 }
 
-/** "13시 24분", 오늘이 아니면 "11월 19일 22시 00분" (now와 같은 시간대 기준) */
-export function formatClock(iso: string, timeZone?: string, now = Date.now()) {
-  const opts = { timeZone, year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric", hourCycle: "h23" } as const;
-  const parts = (d: number) => Object.fromEntries(new Intl.DateTimeFormat("ko-KR", opts).formatToParts(d).map((x) => [x.type, x.value]));
-  const t = parts(Date.parse(iso));
-  const today = parts(now);
-  const clock = `${t.hour.padStart(2, "0")}시 ${t.minute.padStart(2, "0")}분`;
-  return t.year === today.year && t.month === today.month && t.day === today.day ? clock : `${t.month}월 ${t.day}일 ${clock}`;
-}
-
 const rtf = new Intl.RelativeTimeFormat("ko", { numeric: "auto" });
 export function formatRelative(iso: string, now = Date.now()) {
   const diff = (Date.parse(iso) - now) / 1000;

@@ -51,6 +51,7 @@ npm run dev
    2. [`0002_api_grants.sql`](supabase/migrations/0002_api_grants.sql) — Data API 접근 권한. 최근 Supabase 프로젝트는 이 권한을 자동으로 주지 않아, 빠뜨리면 모든 요청이 `42501 permission denied`로 실패합니다.
    3. [`0003_excerpt_translation.sql`](supabase/migrations/0003_excerpt_translation.sql) — 발췌 한국어 번역 열
    4. [`0004_comments_count.sql`](supabase/migrations/0004_comments_count.sql) — HN 댓글 수 열(화제도 표시)
+   5. [`0005_hourly_ingest_trigger.sql`](supabase/migrations/0005_hourly_ingest_trigger.sql) — 매시 20분 자동 수집 요청(선택, 아래 "정시 자동 수집" 참고)
 3. **키 확인** — Project Settings → API Keys에서 Project URL, Publishable key, Secret key를 복사합니다.
 4. **GitHub 토큰(선택, 권장)** — GitHub Settings → Developer settings → Fine-grained token(권한 없음, public repo 읽기만)을 발급합니다. 없으면 검색 API 한도가 분당 10회로 줄어듭니다.
 5. **`.env.local` 작성**
@@ -101,6 +102,30 @@ npm run dev
 | Variable | `AI_SUMMARIZATION_ENABLED=true`, `AI_PROVIDER`, `GEMINI_MODEL`, `ANTHROPIC_MODEL`, `AI_SUMMARY_BATCH_LIMIT`, `AI_MONTHLY_REQUEST_CAP`, `INGEST_BATCH_LIMIT` | 선택 |
 
 `GITHUB_TOKEN`은 Actions가 자동 제공하는 토큰을 사용합니다. Actions 탭 → **Ingest** → *Run workflow*로 수동 실행할 수 있습니다.
+
+### 정시 자동 수집 (Supabase가 매시 20분에 실행 요청)
+
+GitHub Actions의 자체 예약(`schedule`)은 정시 실행을 보장하지 않고 자주 건너뜁니다(이 저장소에서 17번 중 1번 실행). 그래서 Supabase의 예약 작업(pg_cron)이 매시 20분에 GitHub에 "Ingest 실행"을 요청합니다. GitHub 예약(41분)은 예비로 남겨 둡니다.
+
+1. **GitHub 토큰 발급** — GitHub 오른쪽 위 프로필 → Settings → Developer settings → Personal access tokens → **Fine-grained tokens** → Generate new token
+   - Token name: `issuehub-dispatch`, Expiration: 원하는 기간(만료되면 다시 발급해 2번을 반복)
+   - Repository access: **Only select repositories** → `issuehub`
+   - Permissions → Repository permissions → **Actions: Read and write** (나머지는 그대로)
+   - Generate token → `github_pat_...` 값을 복사(창을 닫으면 다시 볼 수 없음)
+2. **토큰을 Supabase Vault에 저장** — Supabase SQL Editor에서 한 번 실행(토큰은 저장소에 커밋하지 않음)
+
+   ```sql
+   select vault.create_secret('github_pat_여기에_붙여넣기', 'github_dispatch_token');
+   ```
+
+3. **예약 작업 등록** — [`0005_hourly_ingest_trigger.sql`](supabase/migrations/0005_hourly_ingest_trigger.sql) 내용을 SQL Editor에 붙여 넣고 실행
+4. **확인** — 다음 20분이 지나면 GitHub Actions 탭에 `workflow_dispatch` 실행이 생깁니다. SQL로도 볼 수 있습니다(`status_code` 204 = 성공, 401 = 토큰 오류, 404 = 권한·저장소 이름 오류).
+
+   ```sql
+   select created, status_code, content from net._http_response order by created desc limit 5;
+   ```
+
+토큰을 바꾸려면 `select vault.update_secret((select id from vault.secrets where name = 'github_dispatch_token'), '새_토큰');`
 
 ## 배포 (Vercel)
 

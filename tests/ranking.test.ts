@@ -115,13 +115,3 @@ describe("toNotionMarkdown", () => {
     expect(done).toContain("## 내 메모");
   });
 });
-
-describe("formatClock", () => {
-  it("shows time only for today and adds the date otherwise", async () => {
-    const { formatClock } = await import("@/lib/utils");
-    const now = Date.parse("2026-11-20T04:24:00Z"); // KST 13:24
-    expect(formatClock("2026-11-20T03:28:00Z", "Asia/Seoul", now)).toBe("12시 28분");
-    expect(formatClock("2026-11-19T13:00:00Z", "Asia/Seoul", now)).toBe("11월 19일 22시 00분");
-    expect(formatClock("2026-11-19T15:05:00Z", "Asia/Seoul", now)).toBe("00시 05분"); // KST 자정 직후도 오늘
-  });
-});

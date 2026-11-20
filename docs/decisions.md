@@ -50,3 +50,6 @@ Next 16.4, React 19.3, Tailwind 4.3, zod 4, supabase-js 2, @anthropic-ai/sdk 1.1
 
 ### D17. 수집 예약은 매시 41분 (2026-11-20)
 정각(`0 * * * *`)으로 바꾼 뒤 14번 중 1번만 예약 실행됐다(이전 6시간·17분 설정도 1번 중 0번). GitHub 문서는 매시 정각을 고부하 시간으로 꼽고 이때 예약 실행이 늦어지거나 버려질 수 있다고 한다. 어느 분이든 보장은 없으므로(2026년 커뮤니티 보고: 정각이 아닌 시각도 수 시간 지연) 덜 붐빌 가능성이 큰 시각을 골랐다: 정각과 5분 단위(사람들이 흔히 쓰는 값), 블로그에서 흔히 권장하는 17·23·37분을 피한 41분. 간격은 1시간을 유지한다. 한 번 건너뛰어도 다음 실행이 이어서 모으므로, 간격이 짧을수록 공백이 짧다. 그래도 자주 빠지면 외부 스케줄러(예: Supabase pg_cron)가 `workflow_dispatch`를 호출하는 방식으로 바꾼다.
+
+### D18. 정시 수집은 Supabase pg_cron이 workflow_dispatch로 요청 (2026-11-20)
+41분 예약도 첫 두 회차(03:41, 04:41 UTC)가 실행되지 않았다. 워크플로는 active였고 GitHub 장애 공지도 없었다. 즉 이 저장소에서는 GitHub `schedule`을 믿을 수 없다. 수집 코드(Node)는 그대로 Actions에서 돌리고, 시계만 Supabase pg_cron으로 옮겼다: 매시 20분에 pg_net이 GitHub REST API로 `workflow_dispatch`를 보낸다(0005). 토큰은 Fine-grained PAT(issuehub 저장소, Actions 쓰기만)를 Supabase Vault에 두고 저장소에는 커밋하지 않는다. 두 실행이 겹쳐도 `concurrency`로 순서대로 돌고 upsert·pending 처리라 중복 저장·중복 요약이 없으므로 GitHub 예약(41분)은 예비로 남긴다.
