@@ -57,14 +57,14 @@ interface RepoRow {
 interface GameRow {
   appid: number; name: string; store_url: string; header_image: string | null; description: string | null; description_ko: string | null;
   tags: string[]; developers: string[]; release_at: string | null; release_label: string | null; coming_soon: boolean; is_free: boolean;
-  price: string | null; discount_pct: number | null; review_label: string | null; review_percent: number | null; review_count: number | null;
+  price: string | null; discount_pct: number | null; discount_ends_at?: string | null; review_label: string | null; review_percent: number | null; review_count: number | null;
   current_players: number | null; peak_players: number | null; ranks: Partial<Record<GameList, number>>; last_synced_at: string;
 }
 
 const toGame = (r: GameRow): Game => ({
   appid: r.appid, name: r.name, storeUrl: r.store_url, headerImage: r.header_image, description: r.description,
   descriptionKo: r.description_ko || null, tags: r.tags ?? [], developers: r.developers ?? [], releaseAt: r.release_at,
-  releaseLabel: r.release_label, comingSoon: r.coming_soon, isFree: r.is_free, price: r.price, discountPct: r.discount_pct,
+  releaseLabel: r.release_label, comingSoon: r.coming_soon, isFree: r.is_free, price: r.price, discountPct: r.discount_pct, discountEndsAt: r.discount_ends_at ?? null,
   review: r.review_label && r.review_percent !== null && r.review_count ? { label: r.review_label, percent: r.review_percent, count: r.review_count } : null,
   currentPlayers: r.current_players, peakPlayers: r.peak_players, ranks: r.ranks ?? {}, lastSyncedAt: r.last_synced_at, isDemo: false,
 });
@@ -231,6 +231,21 @@ export const supabaseAdapter: DataAdapter = {
     const rows = check(res) as GameRow[];
     const items = sortGames(rows.map(toGame), list);
     return { items, asOf: items.reduce<string | null>((m, g) => (!m || g.lastSyncedAt > m ? g.lastSyncedAt : m), null) };
+  },
+
+  async getGame(appid) {
+    const db = getReadClient();
+    const res = await db.from("games").select("*").eq("appid", appid).maybeSingle();
+    if (res.error?.code === "PGRST205") return null;
+    const row = check(res) as GameRow | null;
+    if (!row) return null;
+    const h = await db.from("game_price_history").select("changed_at, price, regular, cut, currency").eq("appid", appid).order("changed_at");
+    // 0007 미적용이면 이력 없이 보여 준다
+    const rows = h.error?.code === "PGRST205" ? [] : (check(h) as { changed_at: string; price: number; regular: number; cut: number; currency: string }[]);
+    return {
+      game: toGame(row),
+      history: rows.map((r) => ({ changedAt: r.changed_at, price: Number(r.price), regular: Number(r.regular), cut: r.cut, currency: r.currency })),
+    };
   },
 
   async listSources() {

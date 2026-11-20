@@ -126,7 +126,7 @@ export async function upsertGames(db: SupabaseClient, games: NormalizedGame[]): 
     const row: Record<string, unknown> = {
       appid: g.appid, name: g.name, store_url: g.storeUrl, header_image: g.headerImage, description: g.description,
       tags: g.tags, developers: g.developers, release_at: g.releaseAt, release_label: g.releaseLabel, coming_soon: g.comingSoon,
-      is_free: g.isFree, price: g.price, discount_pct: g.discountPct, review_label: g.reviewLabel, review_percent: g.reviewPercent,
+      is_free: g.isFree, price: g.price, discount_pct: g.discountPct, discount_ends_at: g.discountEndsAt, review_label: g.reviewLabel, review_percent: g.reviewPercent,
       review_count: g.reviewCount, current_players: g.currentPlayers, peak_players: g.peakPlayers, ranks: g.ranks, last_synced_at: now,
     };
     if (g.descriptionKo) row.description_ko = g.descriptionKo;

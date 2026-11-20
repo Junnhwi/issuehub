@@ -33,3 +33,4 @@
 - 2026-11-19: Supabase 실데이터 연결·Actions 수집 확인. taste-skill v1 설치·적용(리스트형 재구성, Geist 폰트), 저장소 한국어 요약·summarize --dry-run 추가.
 - 2026-11-20: Gemini 무료 번역·요약 운영, 수집 매시 20분(Supabase pg_cron → workflow_dispatch, GitHub 예약 41분은 예비), 화제도(HN 점수·댓글)·댓글순 정렬·노션용 복사 추가. 0004_comments_count.sql은 푸시 전에 적용해야 수집이 깨지지 않음.
 - 2026-11-20: Steam 게임 동향(/games, 0006) 추가. Steam 공개 API(featuredcategories, GetMostPlayedGames, IStoreBrowseService/GetItems, GetNumberOfCurrentPlayers) 키 없음. 영어 소개만 AI 번역.
+- 2026-11-20: 게임 상세 가격 추이(0007, ITAD API country=KR shop=61, 키 ITAD_API_KEY). 0007 적용 전 푸시 금지(discount_ends_at 열 없으면 게임 upsert 실패).

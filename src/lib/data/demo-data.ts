@@ -1,4 +1,4 @@
-import type { Article, Game, Repository, Source, SourceRef, SummaryStatus } from "@/types";
+import type { Article, Game, PricePoint, Repository, Source, SourceRef, SummaryStatus } from "@/types";
 import { computeGrowth } from "./growth";
 import { scoreRelevance } from "@/lib/ingestion/normalize";
 
@@ -358,7 +358,7 @@ export const DEMO_LAST_SYNC = hoursAgo(1);
 const demoGame = (appid: number, name: string, descriptionKo: string, over: Partial<Game>): Game => ({
   appid, name, storeUrl: `https://example.com/demo/games/${appid}`, headerImage: null, description: descriptionKo, descriptionKo,
   tags: [], developers: ["데모 스튜디오"], releaseAt: null, releaseLabel: null, comingSoon: false, isFree: false, price: "₩ 19,800",
-  discountPct: null, review: null, currentPlayers: null, peakPlayers: null, ranks: {}, lastSyncedAt: hoursAgo(1), isDemo: true, ...over,
+  discountPct: null, discountEndsAt: null, review: null, currentPlayers: null, peakPlayers: null, ranks: {}, lastSyncedAt: hoursAgo(1), isDemo: true, ...over,
 });
 
 export const DEMO_GAMES: Game[] = [
@@ -378,3 +378,14 @@ export const DEMO_GAMES: Game[] = [
     tags: ["로그라이트", "액션"], comingSoon: true, releaseLabel: "2027년 1분기 출시 예정", price: null, ranks: { coming_soon: 1 },
   }),
 ];
+
+/** 데모 가격 이력(가상). 정가 19,800원, 세일 두 번 */
+export const DEMO_PRICE_HISTORY: Record<number, PricePoint[]> = {
+  1: [
+    { changedAt: hoursAgo(24 * 240), price: 19800, regular: 19800, cut: 0, currency: "KRW" },
+    { changedAt: hoursAgo(24 * 180), price: 13860, regular: 19800, cut: 30, currency: "KRW" },
+    { changedAt: hoursAgo(24 * 166), price: 19800, regular: 19800, cut: 0, currency: "KRW" },
+    { changedAt: hoursAgo(24 * 60), price: 9900, regular: 19800, cut: 50, currency: "KRW" },
+    { changedAt: hoursAgo(24 * 46), price: 19800, regular: 19800, cut: 0, currency: "KRW" },
+  ],
+};

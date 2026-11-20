@@ -1,4 +1,4 @@
-import type { Game, GameList } from "@/types";
+import type { Game, GameList, PricePoint, SalePeriod } from "@/types";
 
 export const GAME_LISTS: { slug: GameList; label: string; description: string }[] = [
   { slug: "most_played", label: "지금 많이 하는 게임", description: "Steam 동시접속자 차트 상위(최근 일간 최고 동시접속 기준 순위)" },
@@ -40,3 +40,16 @@ export function releaseLabel(unix: number | undefined, display: string | undefin
   const label = `${y}년 ${m}월 ${parts.day}일`;
   return comingSoon ? `${label} 출시 예정` : `${label} 출시`;
 }
+
+/**
+ * 가격 변경 기록(시간순)에서 세일 기간을 만든다. 할인율이 0보다 큰 기록이 시작, 다음 기록이 끝.
+ * 연속된 할인 기록(할인율만 바뀐 경우)은 각각 별도 기간으로 둔다.
+ */
+export function salePeriods(points: PricePoint[]): SalePeriod[] {
+  const sorted = [...points].sort((a, b) => Date.parse(a.changedAt) - Date.parse(b.changedAt));
+  return sorted.flatMap((p, i) =>
+    p.cut > 0 ? [{ start: p.changedAt, end: sorted[i + 1]?.changedAt ?? null, cut: p.cut, price: p.price, regular: p.regular }] : [],
+  );
+}
+
+export const formatWon = (n: number) => `₩${Math.round(n).toLocaleString("ko-KR")}`;

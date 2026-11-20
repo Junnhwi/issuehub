@@ -1,4 +1,5 @@
-import { ArrowUpRight, CalendarDays, Gamepad2, ThumbsUp, Users } from "lucide-react";
+import { ArrowUpRight, CalendarDays, Gamepad2, LineChart, ThumbsUp, Users } from "lucide-react";
+import Link from "next/link";
 import type { Game } from "@/types";
 import { reviewTone } from "@/lib/games";
 import { cn } from "@/lib/utils";
@@ -46,19 +47,11 @@ export function GameRow({ game: g, rank }: { game: Game; rank?: number }) {
 
       <div className="min-w-0">
         <h3 className="text-[17px] font-semibold leading-snug tracking-[-0.01em]">
-          <a href={g.storeUrl} target="_blank" rel="noopener noreferrer" className="outline-none after:absolute after:inset-0 focus-visible:underline">
+          <Link href={`/games/${g.appid}`} className="outline-none after:absolute after:inset-0 focus-visible:underline">
             {g.name}
-          </a>
+          </Link>
         </h3>
-        {g.tags.length > 0 && (
-          <ul className="mt-1.5 flex flex-wrap gap-1" aria-label="태그">
-            {g.tags.slice(0, 4).map((t) => (
-              <li key={t} className="rounded-md bg-elevated px-1.5 py-0.5 text-[12px] text-fg-2">
-                {t}
-              </li>
-            ))}
-          </ul>
-        )}
+        <GameTags tags={g.tags.slice(0, 4)} />
         {desc && (
           <p className={cn("mt-2 line-clamp-2 max-w-[75ch] leading-relaxed", g.descriptionKo ? "text-[14.5px] text-fg-2" : "text-[14px] text-muted")} lang={g.descriptionKo ? "ko" : undefined}>
             {!g.descriptionKo && <span className="mr-1.5 text-[12px] font-medium text-muted/80">원문</span>}
@@ -88,18 +81,48 @@ export function GameRow({ game: g, rank }: { game: Game; rank?: number }) {
               <span className="tabular">
                 {g.discountPct ? <span className="mr-1 font-semibold text-success">-{g.discountPct}%</span> : null}
                 {g.price}
+                {g.discountEndsAt && <span className="ml-1 text-muted">· {endDay(g.discountEndsAt)}까지</span>}
               </span>
             )}
             {g.developers[0] && <span className="truncate">{g.developers.join(", ")}</span>}
             {g.isDemo && <span className="font-medium text-warning">데모</span>}
           </div>
-          <span className="pointer-events-none inline-flex h-11 shrink-0 items-center gap-1.5 rounded-lg border border-line bg-surface px-3 text-[13px] font-medium text-fg-2 transition-colors group-hover:border-line-strong group-hover:text-fg md:h-9" aria-hidden>
-            {g.isDemo ? "예시 링크" : "Steam 상점"}
-            <ArrowUpRight className="size-3.5" />
-          </span>
+          <div className="flex shrink-0 items-center gap-1.5">
+            {!g.isFree && !g.comingSoon && (
+              <span className="pointer-events-none hidden h-9 items-center gap-1.5 px-1 text-[13px] font-medium text-muted transition-colors group-hover:text-fg sm:inline-flex" aria-hidden>
+                <LineChart className="size-3.5" />
+                가격 추이
+              </span>
+            )}
+            <a
+              href={g.storeUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="relative z-10 inline-flex h-11 items-center gap-1.5 rounded-lg border border-line bg-surface px-3 text-[13px] font-medium text-fg-2 transition-colors hover:border-line-strong hover:text-fg md:h-9"
+              aria-label={`${g.name} Steam 상점 열기 (새 창)`}
+            >
+              {g.isDemo ? "예시 링크" : "Steam 상점"}
+              <ArrowUpRight className="size-3.5" aria-hidden />
+            </a>
+          </div>
         </div>
       </div>
     </li>
+  );
+}
+
+const endDay = (iso: string) => new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", month: "numeric", day: "numeric" }).format(Date.parse(iso));
+
+export function GameTags({ tags }: { tags: string[] }) {
+  if (!tags.length) return null;
+  return (
+    <ul className="mt-1.5 flex flex-wrap gap-1" aria-label="태그">
+      {tags.map((t) => (
+        <li key={t} className="rounded-md bg-elevated px-1.5 py-0.5 text-[12px] text-fg-2">
+          {t}
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -109,9 +132,9 @@ export function GameCompactRow({ game: g, rank }: { game: Game; rank: number }) 
     <li className="group relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-hover">
       <span className="tabular w-5 shrink-0 font-mono text-xs text-muted">{rank}</span>
       <div className="min-w-0">
-        <a href={g.storeUrl} target="_blank" rel="noopener noreferrer" className="block truncate text-sm font-medium after:absolute after:inset-0 after:rounded-xl">
+        <Link href={`/games/${g.appid}`} className="block truncate text-sm font-medium after:absolute after:inset-0 after:rounded-xl">
           {g.name}
-        </a>
+        </Link>
         <div className="mt-0.5 flex items-center gap-3 text-xs text-muted">
           {g.currentPlayers !== null && g.currentPlayers > 0 && (
             <span className="tabular inline-flex items-center gap-1">

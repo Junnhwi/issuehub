@@ -54,6 +54,7 @@ npm run dev
    4. [`0004_comments_count.sql`](supabase/migrations/0004_comments_count.sql) — HN 댓글 수 열(화제도 표시)
    5. [`0005_hourly_ingest_trigger.sql`](supabase/migrations/0005_hourly_ingest_trigger.sql) — 매시 20분 자동 수집 요청(선택, 아래 "정시 자동 수집" 참고)
    6. [`0006_steam_games.sql`](supabase/migrations/0006_steam_games.sql) — Steam 게임 테이블과 `steam` 출처
+   7. [`0007_game_price_history.sql`](supabase/migrations/0007_game_price_history.sql) — 한국 Steam 가격 이력·세일 종료일(적용 전에 푸시하면 게임 수집이 실패)
 3. **키 확인** — Project Settings → API Keys에서 Project URL, Publishable key, Secret key를 복사합니다.
 4. **GitHub 토큰(선택, 권장)** — GitHub Settings → Developer settings → Fine-grained token(권한 없음, public repo 읽기만)을 발급합니다. 없으면 검색 API 한도가 분당 10회로 줄어듭니다.
 5. **`.env.local` 작성**
@@ -93,6 +94,17 @@ npm run dev
 - 번역은 원문을 그대로 옮기고, 요약은 제공된 텍스트에서만 만듭니다. 발췌가 80자 미만이면 번역만 하고 요약은 만들지 않습니다(`요약 없음`).
 - 유료 Anthropic을 쓰려면 `ANTHROPIC_API_KEY`를 넣고 `AI_PROVIDER=anthropic` (Claude Code 구독과 별도 과금).
 
+### Steam 가격 추이 (IsThereAnyDeal API, 무료 키)
+
+게임 상세(`/games/[appid]`)에 한국 Steam 가격 추이 그래프와 세일 기록(시작·종료·할인율·세일가)을 보여 줍니다. 과거 가격은 [IsThereAnyDeal](https://isthereanydeal.com/) API의 한국(KR) Steam 기록, 현재 세일 종료일은 Steam 상점 정보입니다.
+
+1. <https://isthereanydeal.com> 에 가입(이메일 인증까지 하면 한도가 5분 1000회로 유지됨)
+2. 로그인 상태에서 <https://isthereanydeal.com/apps/my/> → **Register app** → 앱 이름(예: IssueHub) 입력 → 생성된 **API Key** 복사
+3. `.env.local`에 `ITAD_API_KEY=복사한_키`, GitHub 저장소 Secrets에 `ITAD_API_KEY` 등록
+4. 다음 수집부터 목록에 있는 유료 게임의 가격 이력을 가져옵니다(1회 최대 40개, 게임마다 12시간에 한 번 갱신)
+
+약관 요약(<https://docs.isthereanydeal.com/>): 공개된 앱은 상업적 이용 가능, ITAD 출처 표기 권장, 가격 등 제공 데이터 변경 금지, ITAD와 경쟁하는 서비스 금지. IssueHub는 Steam 한 상점의 기록만 그대로 보여 주고 상점 비교·특가 알림을 하지 않습니다.
+
 ### GitHub Actions 설정
 
 저장소 Settings → Secrets and variables → Actions:
@@ -101,6 +113,7 @@ npm run dev
 |---|---|---|
 | Secret | `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SECRET_KEY` | 수집에 필수 |
 | Secret | `GEMINI_API_KEY` (무료) 또는 `ANTHROPIC_API_KEY` | 번역·요약 시 |
+| Secret | `ITAD_API_KEY` (무료) | Steam 가격 추이 |
 | Variable | `AI_SUMMARIZATION_ENABLED=true`, `AI_PROVIDER`, `GEMINI_MODEL`, `ANTHROPIC_MODEL`, `AI_SUMMARY_BATCH_LIMIT`, `AI_MONTHLY_REQUEST_CAP`, `INGEST_BATCH_LIMIT` | 선택 |
 
 `GITHUB_TOKEN`은 Actions가 자동 제공하는 토큰을 사용합니다. Actions 탭 → **Ingest** → *Run workflow*로 수동 실행할 수 있습니다.

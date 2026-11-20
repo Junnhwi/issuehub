@@ -12,6 +12,7 @@ import { errorCode } from "./lib/http";
 import { fetchGithubRepos } from "./sources/github";
 import { fetchHackerNews } from "./sources/hackernews";
 import { fetchRss } from "./sources/rss";
+import { syncPriceHistory } from "./sources/itad";
 import { fetchSteamGames } from "./sources/steam";
 
 loadEnv();
@@ -69,6 +70,15 @@ async function main() {
         const res = db ? await upsertGames(db, games) : { saved: 0, failed: 0 };
         if (db) await finishRun(db, runId, res.failed ? "partial" : "success", games.length, res.saved, res.failed ? "PARTIAL_UPSERT" : null);
         console.log(`✓ ${source.slug} fetched=${games.length} saved=${res.saved} failed=${res.failed} ${Date.now() - started}ms`);
+        if (db && process.env.ITAD_API_KEY) {
+          // 가격 이력 실패는 게임 수집 결과에 영향을 주지 않는다
+          try {
+            const h = await syncPriceHistory(db, process.env.ITAD_API_KEY);
+            console.log(`✓ price-history(ITAD, KR) games=${h.synced}/${h.candidates} points=${h.points} failed=${h.failed}`);
+          } catch (e) {
+            console.error(`✖ price-history error=${errorCode(e)}${errorCode(e).includes("ITAD_AUTH") ? " → ITAD_API_KEY 확인" : ""}`);
+          }
+        } else if (db) console.log("  price-history 건너뜀: ITAD_API_KEY 없음");
         if (dryRun)
           for (const g of games.slice(0, 4))
             console.log(`    - ${g.name} [${Object.keys(g.ranks).join(",")}] ${g.reviewLabel ?? "평가 없음"} ${g.reviewPercent ?? "-"}% (${g.reviewCount ?? 0}) 동접=${g.currentPlayers ?? "-"} ${g.descriptionKo ? "한국어 설명" : "번역 필요"}`);

@@ -112,6 +112,8 @@ export interface Game {
   isFree: boolean;
   price: string | null;
   discountPct: number | null;
+  /** Steam이 알려 준 현재 세일 종료 시각. 세일 중이 아니면 null */
+  discountEndsAt: string | null;
   /** 평가가 하나도 없으면 null */
   review: GameReview | null;
   currentPlayers: number | null;
@@ -120,6 +122,24 @@ export interface Game {
   ranks: Partial<Record<GameList, number>>;
   lastSyncedAt: string;
   isDemo: boolean;
+}
+
+/** 가격 변경 기록: changedAt부터 다음 기록 전까지 이 가격이 적용됨 */
+export interface PricePoint {
+  changedAt: string;
+  price: number;
+  regular: number;
+  cut: number;
+  currency: string;
+}
+
+export interface SalePeriod {
+  start: string;
+  /** 진행 중이면 null */
+  end: string | null;
+  cut: number;
+  price: number;
+  regular: number;
 }
 
 export interface Page<T> {

@@ -30,6 +30,7 @@ export interface NormalizedGame {
   isFree: boolean;
   price: string | null;
   discountPct: number | null;
+  discountEndsAt: string | null;
   reviewLabel: string | null;
   reviewPercent: number | null;
   reviewCount: number | null;
@@ -57,10 +58,15 @@ export interface StoreItem {
   tagids?: number[];
   tags?: { tagid: number; weight: number }[];
   assets?: { asset_url_format?: string; header?: string };
-  best_purchase_option?: { formatted_final_price?: string; discount_pct?: number; is_free?: boolean };
+  best_purchase_option?: { formatted_final_price?: string; discount_pct?: number; is_free?: boolean; active_discounts?: { discount_end_date?: number }[] };
 }
 
 const hasHangul = (s: string) => /[가-힣]/.test(s);
+/** 진행 중인 할인 중 가장 먼저 끝나는 시각 */
+const endsAt = (ds: { discount_end_date?: number }[] | undefined) => {
+  const t = Math.min(...(ds ?? []).map((d) => d.discount_end_date ?? Infinity));
+  return Number.isFinite(t) ? new Date(t * 1000).toISOString() : null;
+};
 
 /** GetItems 한 항목 → 저장 형태. 게임(type 0)이 아니거나 비공개면 null */
 export function normalizeStoreItem(item: StoreItem, tagNames: Map<number, string>, ranks: NormalizedGame["ranks"], peak: number | null): NormalizedGame | null {
@@ -86,6 +92,7 @@ export function normalizeStoreItem(item: StoreItem, tagNames: Map<number, string
     isFree,
     price: isFree ? "무료" : (item.best_purchase_option?.formatted_final_price ?? null),
     discountPct: item.best_purchase_option?.discount_pct || null,
+    discountEndsAt: endsAt(item.best_purchase_option?.active_discounts),
     reviewLabel: review && review.review_count > 0 ? review.review_score_label : null,
     reviewPercent: review && review.review_count > 0 ? review.percent_positive : null,
     reviewCount: review ? review.review_count : null,

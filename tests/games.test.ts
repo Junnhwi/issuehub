@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { releaseLabel, reviewTone, sortGames } from "@/lib/games";
+import { releaseLabel, reviewTone, salePeriods, sortGames } from "@/lib/games";
+import { toPriceRows } from "../scripts/sources/itad";
 import { collectRanks, normalizeStoreItem, searchAppids, type StoreItem } from "../scripts/sources/steam";
 import type { Game } from "@/types";
 
 const game = (over: Partial<Game>): Game => ({
   appid: 1, name: "g", storeUrl: "u", headerImage: null, description: null, descriptionKo: null, tags: [], developers: [], releaseAt: null,
-  releaseLabel: null, comingSoon: false, isFree: false, price: null, discountPct: null, review: null, currentPlayers: null, peakPlayers: null,
+  releaseLabel: null, comingSoon: false, isFree: false, price: null, discountPct: null, discountEndsAt: null, review: null, currentPlayers: null, peakPlayers: null,
   ranks: {}, lastSyncedAt: "2026-11-20T00:00:00Z", isDemo: false, ...over,
 });
 
@@ -71,5 +72,31 @@ describe("game helpers", () => {
   });
   it("maps review percent to a tone, with no tone when there are no reviews", () => {
     expect([reviewTone(85, 10), reviewTone(55, 10), reviewTone(20, 10), reviewTone(0, 0)]).toEqual(["positive", "mixed", "negative", null]);
+  });
+});
+
+describe("price history", () => {
+  const p = (changedAt: string, price: number, cut: number) => ({ changedAt, price, regular: 10000, cut, currency: "KRW" });
+  it("turns discounted entries into sale periods ending at the next change", () => {
+    const sales = salePeriods([p("2026-03-15T00:00:00Z", 10000, 0), p("2026-03-01T00:00:00Z", 5000, 50), p("2026-06-01T00:00:00Z", 7000, 30)]);
+    expect(sales).toEqual([
+      { start: "2026-03-01T00:00:00Z", end: "2026-03-15T00:00:00Z", cut: 50, price: 5000, regular: 10000 },
+      { start: "2026-06-01T00:00:00Z", end: null, cut: 30, price: 7000, regular: 10000 },
+    ]);
+  });
+  it("keeps only Steam entries with a price, values unchanged", () => {
+    const rows = toPriceRows(10, [
+      { timestamp: "2026-03-01T09:00:00+09:00", shop: { id: 61, name: "Steam" }, deal: { price: { amount: 9900, currency: "KRW" }, regular: { amount: 19800, currency: "KRW" }, cut: 50 } },
+      { timestamp: "2026-03-02T00:00:00Z", shop: { id: 61, name: "Steam" }, deal: null },
+      { timestamp: "2026-03-03T00:00:00Z", shop: { id: 35, name: "GOG" }, deal: { price: { amount: 1, currency: "KRW" }, regular: { amount: 2, currency: "KRW" }, cut: 50 } },
+    ]);
+    expect(rows).toEqual([{ appid: 10, changed_at: "2026-03-01T00:00:00.000Z", price: 9900, regular: 19800, cut: 50, currency: "KRW" }]);
+  });
+  it("reads the current sale end date from Steam", () => {
+    const g = normalizeStoreItem(
+      { appid: 1, name: "x", type: 0, success: 1, best_purchase_option: { discount_pct: 20, active_discounts: [{ discount_end_date: 1796025600 }] } },
+      new Map(), {}, null,
+    )!;
+    expect(g.discountEndsAt).toBe("2026-11-30T08:00:00.000Z");
   });
 });

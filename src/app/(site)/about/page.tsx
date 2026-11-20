@@ -55,6 +55,9 @@ export default async function AboutPage() {
               <strong className="text-fg">Steam 공개 API</strong> — 동시접속자 차트, 상점의 최고 인기·신규 출시·곧 출시 목록, 게임별 한국어 소개·사용자 평가 요약·태그·가격. 평가와 동시접속자는 Steam이 공개한 값을 그대로 보여 주며, 영어 소개만 있는 게임은 AI로 번역합니다.
             </li>
             <li>
+              <strong className="text-fg">IsThereAnyDeal API</strong> — Steam 유료 게임의 한국(KR) 가격 변경 기록. 가격 추이 그래프와 세일 기록에 그대로 사용합니다. IssueHub는 IsThereAnyDeal과 제휴 관계가 아닙니다.
+            </li>
+            <li>
               <strong className="text-fg">공식 RSS 피드</strong> — 실제 제공되는 피드만 등록합니다. RSS가 없는 사이트는 크롤링하지 않습니다.
             </li>
           </ul>
