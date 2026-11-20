@@ -2,7 +2,7 @@ name: Ingest
 
 on:
   schedule:
-    - cron: "0 * * * *" # 매시 정각 (UTC)
+    - cron: "41 * * * *" # 매시 41분: 정각·5분 단위·흔히 권장되는 17/23/37분을 피한 덜 붐비는 시각
   workflow_dispatch:
     inputs:
       source:
