@@ -11,6 +11,7 @@ export interface HnItem {
   url?: string;
   text?: string;
   score?: number;
+  descendants?: number;
   time?: number;
   dead?: boolean;
   deleted?: boolean;
@@ -35,6 +36,7 @@ export function normalizeHnItem(item: HnItem): NormalizedArticle | null {
     excerpt,
     publishedAt: toUtcIso(item.time ?? null),
     popularity: item.score ?? null,
+    commentsCount: item.descendants ?? null,
     topics,
     relevanceScore: scoreRelevance(text),
   };

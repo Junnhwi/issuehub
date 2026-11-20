@@ -83,7 +83,7 @@ export default async function TopicPage({ params, searchParams }: Props) {
             <QueryFilters
               fields={[
                 { name: "period", label: "기간", type: "segment", defaultValue: "all", options: [{ value: "7d", label: "7일" }, { value: "30d", label: "30일" }, { value: "all", label: "전체" }] },
-                { name: "sort", label: "정렬", type: "segment", defaultValue: "latest", options: [{ value: "latest", label: "최신순" }, { value: "popular", label: "인기순" }] },
+                { name: "sort", label: "정렬", type: "segment", defaultValue: "latest", options: [{ value: "latest", label: "최신순" }, { value: "popular", label: "점수순" }, { value: "discussed", label: "댓글순" }] },
               ]}
             />
           </div>

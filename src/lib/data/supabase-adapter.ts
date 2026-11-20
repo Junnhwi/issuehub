@@ -21,6 +21,7 @@ interface ArticleRow {
   summary_status: SummaryStatus;
   relevance_score: number | null;
   popularity: number | null;
+  comments_count?: number | null;
   published_at: string | null;
   fetched_at: string;
   summarized_at: string | null;
@@ -76,6 +77,7 @@ function toArticle(r: ArticleRow): Article {
     source: { slug: r.source_slug, name: r.source_name, kind: r.source_kind, tier: r.source_tier, homepageUrl: r.source_homepage_url },
     topics: r.topic_slugs ?? [],
     popularity: r.popularity,
+    commentsCount: r.comments_count ?? null,
     relevanceScore: r.relevance_score === null ? null : Number(r.relevance_score),
     publishedAt: r.published_at,
     fetchedAt: r.fetched_at,
@@ -139,6 +141,7 @@ export const supabaseAdapter: DataAdapter = {
     const start = periodStart(p.period);
     if (start) query = query.gte("sort_at", start);
     if (p.sort === "popular") query = query.order("popularity", { ascending: false, nullsFirst: false });
+    if (p.sort === "discussed") query = query.order("comments_count", { ascending: false, nullsFirst: false });
     if (p.sort === "relevant") query = query.order("relevance_score", { ascending: false, nullsFirst: false });
     query = query.order("sort_at", { ascending: false }).range(offset, offset + p.limit - 1);
     const res = await query;

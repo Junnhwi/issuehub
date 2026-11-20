@@ -33,7 +33,7 @@ const NOW = Date.parse("2026-11-19T12:00:00Z");
 const article = (over: Partial<Article>): Article => ({
   id: "x", title: "t", titleKo: null, excerpt: null, excerptKo: null, summaryKo: null, keyPoints: [], whyItMatters: null, useCases: [], caveats: null,
   summaryStatus: "pending", originalUrl: "https://ex.com", discussionUrl: null, source: { slug: "hn", name: "HN", kind: "hackernews", tier: "community", homepageUrl: null },
-  topics: [], popularity: null, relevanceScore: null, publishedAt: null, fetchedAt: "2026-11-19T00:00:00Z", summarizedAt: null, ...over,
+  topics: [], popularity: null, commentsCount: null, relevanceScore: null, publishedAt: null, fetchedAt: "2026-11-19T00:00:00Z", summarizedAt: null, ...over,
 });
 
 describe("filterArticles", () => {
@@ -78,5 +78,40 @@ describe("paginate", () => {
     const p1 = paginate([1, 2, 3, 4, 5], undefined, 2, null);
     expect(p1).toMatchObject({ items: [1, 2], nextCursor: "2", total: 5 });
     expect(paginate([1, 2, 3, 4, 5], "4", 2, null)).toMatchObject({ items: [5], nextCursor: null });
+  });
+});
+
+describe("buzz level and discussed sort", () => {
+  it("uses only published thresholds and treats missing numbers as no signal", async () => {
+    const { buzzLevel } = await import("@/lib/buzz");
+    expect(buzzLevel(null, null)).toBeNull();
+    expect(buzzLevel(99, 49)).toBeNull();
+    expect(buzzLevel(100, null)).toBe("rising");
+    expect(buzzLevel(10, 150)).toBe("hot");
+    expect(buzzLevel(300, 0)).toBe("hot");
+  });
+  it("sorts by comment count with nulls last", () => {
+    const out = filterArticles(
+      [article({ id: "a", commentsCount: 5 }), article({ id: "b", commentsCount: null }), article({ id: "c", commentsCount: 80 })],
+      articleListSchema.parse({ sort: "discussed" }),
+      NOW,
+    );
+    expect(out.map((a) => a.id)).toEqual(["c", "a", "b"]);
+  });
+});
+
+describe("toNotionMarkdown", () => {
+  it("includes links and reactions, and the AI summary only when completed", async () => {
+    const { toNotionMarkdown } = await import("@/lib/notion-markdown");
+    const base = article({ title: "Orig", titleKo: "번역", popularity: 320, commentsCount: 12, summaryKo: "요약문.", keyPoints: ["k1"] });
+    const pending = toNotionMarkdown(base);
+    expect(pending).toContain("# 번역\n> 원제: Orig");
+    expect(pending).toContain("- 원문: https://ex.com");
+    expect(pending).toContain("점수 320점 · 댓글 12개 (큰 화제)");
+    expect(pending).not.toContain("요약문.");
+    const done = toNotionMarkdown({ ...base, summaryStatus: "completed" });
+    expect(done).toContain("요약문.");
+    expect(done).toContain("### 핵심 포인트\n- k1");
+    expect(done).toContain("## 내 메모");
   });
 });

@@ -10,7 +10,7 @@
 | URL | 파라미터 |
 |---|---|
 | `/api/health` | — `{ status, mode: "demo"|"live", lastSuccessfulSyncAt }` |
-| `/api/articles` | `q`(≤100자), `topic`(등록된 slug), `source`, `tier=official|community|independent`, `period=24h|7d|30d|all`, `sort=latest|relevant|popular`, `cursor`, `limit` |
+| `/api/articles` | `q`(≤100자), `topic`(등록된 slug), `source`, `tier=official|community|independent`, `period=24h|7d|30d|all`, `sort=latest|relevant|popular|discussed`(댓글 많은 순), `cursor`, `limit` |
 | `/api/articles/:id` | UUID. 기사 + `related` |
 | `/api/repos` | `q`, `language`, `topic`, `sort=stars|updated|growth`, `cursor`, `limit` |
 | `/api/repos/:id` | UUID. 저장소 + 최근 30개 `snapshots` |

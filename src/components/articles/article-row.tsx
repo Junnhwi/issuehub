@@ -1,11 +1,12 @@
 import { ArrowUpRight, MessagesSquare, PenLine, ShieldCheck, Sparkles, Users } from "lucide-react";
 import Link from "next/link";
 import type { Article, SourceTier } from "@/types";
-import { cn, formatCount, hostOf } from "@/lib/utils";
+import { cn, hostOf } from "@/lib/utils";
 import { LocalTime } from "@/components/ui/local-time";
 import { articleBookmark } from "./article-card";
 import { BookmarkButton } from "./bookmark-button";
 import { TopicTag } from "./badges";
+import { BuzzBadge, Engagement } from "./buzz";
 
 const TIER = {
   official: { label: "공식", icon: ShieldCheck, cls: "text-success" },
@@ -64,6 +65,7 @@ export function ArticleRow({ article: a, dense = false }: { article: Article; de
       <div className={dense ? "px-4 py-4" : "px-4 py-5 md:px-6"}>
         <div className="mb-2.5 flex items-start justify-between gap-3">
           <div className="flex min-w-0 flex-wrap gap-1.5">
+            <BuzzBadge article={a} />
             {topics.map((t) => (
               <TopicTag key={t} slug={t} />
             ))}
@@ -99,13 +101,9 @@ export function ArticleRow({ article: a, dense = false }: { article: Article; de
 
         <div className={cn("flex flex-wrap items-center justify-between gap-x-3 gap-y-2", dense ? "mt-2.5" : "mt-4")}>
           <div className="flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1 text-[13px] text-muted">
+            <Engagement article={a} />
             <span className="font-medium text-fg-2">{a.source.name}</span>
             <TierLabel tier={a.source.tier} />
-            {a.popularity !== null && (
-              <span className="tabular font-mono text-[12px]" title="출처 인기 지표(예: Hacker News points)">
-                {formatCount(a.popularity)} pts
-              </span>
-            )}
             {demo && <span className="font-medium text-warning">데모</span>}
           </div>
           <div className="flex shrink-0 items-center gap-1.5">

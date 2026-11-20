@@ -6,6 +6,8 @@ export interface NormalizedArticle {
   excerpt: string | null;
   publishedAt: string | null;
   popularity: number | null;
+  /** 댓글 수(예: HN descendants). 없으면 null */
+  commentsCount: number | null;
   topics: string[];
   relevanceScore: number | null;
 }

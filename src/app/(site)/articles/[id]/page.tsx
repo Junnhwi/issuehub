@@ -4,11 +4,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getData } from "@/lib/data";
 import { uuidSchema } from "@/lib/validation/params";
-import { hostOf } from "@/lib/utils";
+import { toNotionMarkdown } from "@/lib/notion-markdown";
+import { cn, hostOf } from "@/lib/utils";
 import { articleBookmark } from "@/components/articles/article-card";
 import { ArticleList, ArticleRow } from "@/components/articles/article-row";
 import { DemoBadge, SummaryStatusBadge, TierBadge, TopicTag } from "@/components/articles/badges";
 import { BookmarkButton } from "@/components/articles/bookmark-button";
+import { BuzzBadge, Engagement } from "@/components/articles/buzz";
 import { CopyLinkButton } from "@/components/articles/copy-link-button";
 import { SummaryPanel } from "@/components/articles/summary-panel";
 import { buttonClass } from "@/components/ui/button";
@@ -30,6 +32,7 @@ export default async function ArticlePage({ params }: Props) {
   const res = await load((await params).id);
   if (!res) notFound();
   const { article: a, related } = res;
+  const hasReaction = a.popularity !== null || a.commentsCount !== null;
 
   return (
     <div className="mx-auto max-w-[780px]">
@@ -49,6 +52,7 @@ export default async function ArticlePage({ params }: Props) {
             {a.source.kind === "demo" && <DemoBadge />}
             <TierBadge tier={a.source.tier} />
             <SummaryStatusBadge status={a.summaryStatus} sourceKind={a.source.kind} />
+            <BuzzBadge article={a} />
           </div>
           <h1 className="text-[26px] font-bold leading-[1.3] tracking-tight md:text-[32px]">{a.titleKo ?? a.title}</h1>
           {a.titleKo && a.titleKo !== a.title && (
@@ -57,7 +61,15 @@ export default async function ArticlePage({ params }: Props) {
             </p>
           )}
 
-          <dl className="mt-5 grid gap-x-6 gap-y-2 rounded-xl border border-line bg-surface/60 p-4 text-[13px] sm:grid-cols-3">
+          <dl className={cn("mt-5 grid gap-x-6 gap-y-3 rounded-xl border border-line bg-surface/60 p-4 text-[13px] sm:grid-cols-3", hasReaction && "md:grid-cols-4")}>
+            {hasReaction && (
+              <div>
+                <dt className="text-muted">커뮤니티 반응</dt>
+                <dd className="mt-1">
+                  <Engagement article={a} className="text-[15px]" />
+                </dd>
+              </div>
+            )}
             <div>
               <dt className="text-muted">원출처</dt>
               <dd className="mt-0.5 font-medium">
@@ -93,7 +105,8 @@ export default async function ArticlePage({ params }: Props) {
                 HN 토론 보기
               </a>
             )}
-            <CopyLinkButton url={a.originalUrl} />
+            <CopyLinkButton text={toNotionMarkdown(a)} kind="note" />
+            <CopyLinkButton text={a.originalUrl} />
             <BookmarkButton item={articleBookmark(a)} withLabel />
           </div>
         </header>

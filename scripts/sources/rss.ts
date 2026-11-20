@@ -48,6 +48,7 @@ export function parseFeed(xml: string, limit: number): NormalizedArticle[] {
       excerpt,
       publishedAt: toUtcIso(r.date),
       popularity: null,
+      commentsCount: null,
       topics: tagTopics(all),
       relevanceScore: scoreRelevance(all),
     });

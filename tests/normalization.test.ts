@@ -53,7 +53,7 @@ describe("stripHtml", () => {
 });
 
 describe("dedupeArticles", () => {
-  const base: NormalizedArticle = { sourceItemId: "1", originalUrl: "u", normalizedUrl: "https://x.com/a", title: "t", excerpt: null, publishedAt: null, popularity: 1, topics: [], relevanceScore: null };
+  const base: NormalizedArticle = { sourceItemId: "1", originalUrl: "u", normalizedUrl: "https://x.com/a", title: "t", excerpt: null, publishedAt: null, popularity: 1, commentsCount: null, topics: [], relevanceScore: null };
   it("keeps one item per normalized url, preferring higher popularity", () => {
     const out = dedupeArticles([base, { ...base, sourceItemId: "2", popularity: 10 }, { ...base, normalizedUrl: "https://x.com/b" }]);
     expect(out).toHaveLength(2);
@@ -63,8 +63,8 @@ describe("dedupeArticles", () => {
 
 describe("source adapters (pure parts)", () => {
   it("normalizes HN stories and drops off-topic or dead items", () => {
-    const a = normalizeHnItem({ id: 7, type: "story", title: "Show HN: an LLM eval tool", url: "https://ex.com/?utm_campaign=x", score: 42, time: 1_700_000_000 });
-    expect(a).toMatchObject({ sourceItemId: "7", normalizedUrl: "https://ex.com/", popularity: 42, topics: ["ai-llm"] });
+    const a = normalizeHnItem({ id: 7, type: "story", title: "Show HN: an LLM eval tool", url: "https://ex.com/?utm_campaign=x", score: 42, descendants: 17, time: 1_700_000_000 });
+    expect(a).toMatchObject({ sourceItemId: "7", normalizedUrl: "https://ex.com/", popularity: 42, commentsCount: 17, topics: ["ai-llm"] });
     expect(normalizeHnItem({ id: 8, type: "story", title: "My garden in spring" })).toBeNull();
     expect(normalizeHnItem({ id: 9, type: "story", title: "LLM", dead: true })).toBeNull();
     expect(normalizeHnItem({ id: 10, type: "comment", title: "LLM" })).toBeNull();

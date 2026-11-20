@@ -62,7 +62,8 @@ export default async function DiscoverPage({ searchParams }: { searchParams: SP 
       options: [
         { value: "latest", label: "최신순" },
         { value: "relevant", label: "연관도순" },
-        { value: "popular", label: "인기순" },
+        { value: "popular", label: "점수순" },
+        { value: "discussed", label: "댓글순" },
       ],
     },
   ];
@@ -100,7 +101,8 @@ export default async function DiscoverPage({ searchParams }: { searchParams: SP 
         )}
         <span className="tabular">{page.total?.toLocaleString("ko-KR") ?? page.items.length}건</span>
         {params.sort === "relevant" && " · 연관도는 등록된 토픽 키워드 일치 수입니다"}
-        {params.sort === "popular" && " · 인기 지표가 없는 출처는 뒤에 표시됩니다"}
+        {params.sort === "popular" && " · Hacker News 점수 순 · 점수가 없는 출처(공식 블로그 등)는 뒤에 표시됩니다"}
+        {params.sort === "discussed" && " · Hacker News 댓글 수 순 · 댓글 수가 없는 출처는 뒤에 표시됩니다"}
       </p>
 
       {page.items.length ? (

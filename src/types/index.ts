@@ -52,6 +52,8 @@ export interface Article {
   topics: string[];
   /** 출처가 제공한 인기 지표(예: HN points). 없으면 null */
   popularity: number | null;
+  /** 출처가 제공한 댓글 수(예: HN 댓글). 없으면 null */
+  commentsCount: number | null;
   /** 토픽 키워드 매칭 기반 연관도. 계산 불가 시 null */
   relevanceScore: number | null;
   publishedAt: string | null;

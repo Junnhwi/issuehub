@@ -100,7 +100,15 @@ export default async function DashboardPage() {
       <div className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_300px]">
         <div className="min-w-0 space-y-10">
           <section aria-labelledby="top-title">
-            <SectionTitle id="top-title" title="주요 이슈" action={<span className="text-xs text-muted">최근 7일 · 출처 인기 지표 순</span>} />
+            <SectionTitle
+              id="top-title"
+              title="화제의 이슈"
+              action={
+                <Link href="/discover?period=7d&sort=popular" className="inline-flex items-center gap-1 text-[13px] font-medium text-accent-fg hover:underline">
+                  최근 7일 · 점수순 <ArrowRight className="size-3.5" aria-hidden />
+                </Link>
+              }
+            />
             {featured ? (
               <div className="grid gap-4 lg:grid-cols-[1.1fr_1fr] lg:items-start">
                 <ArticleCard article={featured} variant="featured" />

@@ -1,10 +1,10 @@
 import { Sparkles } from "lucide-react";
 import Link from "next/link";
 import type { Article } from "@/types";
-import { formatCount } from "@/lib/utils";
 import { LocalTime } from "@/components/ui/local-time";
 import { BookmarkButton } from "./bookmark-button";
 import { TopicTag } from "./badges";
+import { BuzzBadge, Engagement } from "./buzz";
 import { SourceLinks, TierLabel } from "./article-row";
 
 export function articleBookmark(a: Article) {
@@ -28,7 +28,8 @@ export function ArticleCard({ article: a }: { article: Article; variant?: "featu
   return (
     <article className="group relative flex flex-col rounded-2xl border border-line bg-surface p-5 transition-colors hover:border-line-strong focus-within:border-line-strong md:p-6">
       <div className="mb-3.5 flex items-start justify-between gap-3">
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <BuzzBadge article={a} />
           {a.topics.map((t) => (
             <TopicTag key={t} slug={t} size="md" />
           ))}
@@ -82,9 +83,9 @@ export function ArticleCard({ article: a }: { article: Article; variant?: "featu
 
       <div className="mt-5 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-t border-line pt-4">
         <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[13px] text-muted">
+          <Engagement article={a} />
           <span className="font-medium text-fg-2">{a.source.name}</span>
           <TierLabel tier={a.source.tier} />
-          {a.popularity !== null && <span className="tabular font-mono text-[12px]">{formatCount(a.popularity)} pts</span>}
           {demo && <span className="font-medium text-warning">데모</span>}
         </div>
         <div className="flex shrink-0 items-center gap-1.5">

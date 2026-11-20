@@ -1,4 +1,5 @@
-import { Bot, Clock, Database, Mail, ShieldCheck, Users, PenLine } from "lucide-react";
+import { Bot, Clock, Database, Flame, Mail, ShieldCheck, Users, PenLine } from "lucide-react";
+import { BUZZ_RULES } from "@/lib/buzz";
 import type { Metadata } from "next";
 import { getData } from "@/lib/data";
 import { getDataMode } from "@/lib/env";
@@ -101,6 +102,23 @@ export default async function AboutPage() {
             </li>
           </ul>
           <p>인기 지표(예: HN 점수)와 출처 유형은 서로 다른 개념이며 따로 표시합니다.</p>
+        </Section>
+
+        <Section id="buzz" icon={Flame} title="화제도와 반응 수치">
+          <p>
+            이슈가 얼마나 주목받는지는 출처가 공개한 숫자만으로 보여 줍니다. 지금은 Hacker News의 <strong className="text-fg">점수(추천 수)</strong>와{" "}
+            <strong className="text-fg">댓글 수</strong>, GitHub 저장소의 <strong className="text-fg">Star 수와 관측 증가량</strong>이 그 숫자입니다.
+          </p>
+          <ul className="list-disc space-y-1.5 pl-5">
+            <li>
+              <strong className="text-fg">큰 화제</strong> — HN 점수 {BUZZ_RULES.hot.points}점 이상 또는 댓글 {BUZZ_RULES.hot.comments}개 이상
+            </li>
+            <li>
+              <strong className="text-fg">화제</strong> — HN 점수 {BUZZ_RULES.rising.points}점 이상 또는 댓글 {BUZZ_RULES.rising.comments}개 이상
+            </li>
+            <li>수치는 IssueHub가 마지막으로 수집한 시점의 값입니다. 글이 HN 첫 화면에 있는 동안 매 수집마다 갱신됩니다.</li>
+            <li>공식 블로그 등 RSS 출처는 조회수나 평가를 공개하지 않아 반응 수치가 없습니다. 임의의 점수로 채우지 않습니다.</li>
+          </ul>
         </Section>
 
         <Section icon={Bot} title="AI 요약의 한계">

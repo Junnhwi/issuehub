@@ -12,7 +12,7 @@ export const articleListSchema = z.object({
   source: slug,
   tier: z.enum(["official", "community", "independent"]).optional(),
   period: z.enum(["24h", "7d", "30d", "all"]).default("all"),
-  sort: z.enum(["latest", "relevant", "popular"]).default("latest"),
+  sort: z.enum(["latest", "relevant", "popular", "discussed"]).default("latest"),
   cursor,
   limit,
 });

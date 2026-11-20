@@ -31,7 +31,7 @@ export function TopicFilter({
 
   return (
     <nav aria-label="토픽 필터" className="-mx-4 overflow-x-auto px-4 pb-1 md:mx-0 md:px-0">
-      <ul className="flex gap-1.5 md:flex-wrap">
+      <ul className="flex gap-1.5 md:flex-wrap [&>li]:shrink-0">
         <li>
           <Link
             href={href()}

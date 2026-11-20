@@ -11,6 +11,8 @@ Next.js App Router 기반 포트폴리오 프로젝트입니다. API 키나 DB �
 | 화면 | `/` 대시보드, `/discover` 이슈 탐색, `/articles/[id]` 상세, `/github` 저장소, `/topics`·`/topics/[slug]`, `/saved`, `/about` |
 | 디자인 | 다크(기본)/라이트 테마(localStorage 유지), 데스크톱 236px 사이드바·태블릿 아이콘 사이드바·모바일 하단 내비, Pretendard 폰트, 스켈레톤·빈 상태·오류 재시도·토스트, `Ctrl/Cmd+K` 검색 |
 | 탐색 | 검색어·토픽·출처·출처 유형·기간·정렬을 URL 쿼리에 저장(공유/뒤로가기), cursor 페이지네이션 |
+| 화제도 | HN 점수·댓글 수와 공개 기준(300점/150댓글=큰 화제, 100점/50댓글=화제) 칩, 점수순·댓글순 정렬 |
+| 학습 노트 | 상세 페이지 **노션용 복사**: 원문·토론 링크, 반응 수치, AI 요약(완료된 것만), 메모 칸을 Markdown으로 복사 |
 | 북마크 | localStorage 기반 기사/저장소 저장, 탭·검색·토픽 필터·삭제 |
 | 데이터 | Supabase PostgreSQL 스키마·RLS·view, 데모/실데이터 어댑터 자동 전환 |
 | 수집 | GitHub Search API, Hacker News API, 검증된 RSS(GitHub Blog, Next.js Blog, Cloudflare Blog), URL 정규화·중복 제거·재실행 안전 upsert, 일별 Star 스냅샷 |
@@ -44,10 +46,11 @@ npm run dev
 ## 실데이터 모드 설정 (사용자가 직접 해야 하는 단계)
 
 1. **Supabase 프로젝트 생성** — <https://supabase.com> 에서 새 프로젝트를 만듭니다.
-2. **스키마 적용** — Dashboard → SQL Editor에서 아래 두 파일을 **순서대로** 붙여 넣고 실행합니다. (Supabase CLI를 쓰면 `supabase db push`)
+2. **스키마 적용** — Dashboard → SQL Editor에서 아래 파일들을 **순서대로** 붙여 넣고 실행합니다. (Supabase CLI를 쓰면 `supabase db push`)
    1. [`0001_initial_schema.sql`](supabase/migrations/0001_initial_schema.sql) — 테이블·RLS·view·seed
    2. [`0002_api_grants.sql`](supabase/migrations/0002_api_grants.sql) — Data API 접근 권한. 최근 Supabase 프로젝트는 이 권한을 자동으로 주지 않아, 빠뜨리면 모든 요청이 `42501 permission denied`로 실패합니다.
    3. [`0003_excerpt_translation.sql`](supabase/migrations/0003_excerpt_translation.sql) — 발췌 한국어 번역 열
+   4. [`0004_comments_count.sql`](supabase/migrations/0004_comments_count.sql) — HN 댓글 수 열(화제도 표시)
 3. **키 확인** — Project Settings → API Keys에서 Project URL, Publishable key, Secret key를 복사합니다.
 4. **GitHub 토큰(선택, 권장)** — GitHub Settings → Developer settings → Fine-grained token(권한 없음, public repo 읽기만)을 발급합니다. 없으면 검색 API 한도가 분당 10회로 줄어듭니다.
 5. **`.env.local` 작성**
@@ -141,3 +144,4 @@ npm run dev
 | GitHub 수집 개수가 적음 | `GITHUB_TOKEN` 미설정 시 rate limit으로 일부 쿼리만 실행됩니다 |
 | 요약이 계속 `요약 대기` | `AI_SUMMARIZATION_ENABLED=true` + `GEMINI_API_KEY` 설정 후 `npm run summarize` |
 | `PGRST204` (excerpt_ko) | `0003_excerpt_translation.sql` 미실행 |
+| `npm run ingest`의 기사 저장이 모두 실패(`PGRST204`) | `0004_comments_count.sql` 미실행 |

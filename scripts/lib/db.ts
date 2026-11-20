@@ -53,6 +53,7 @@ export async function upsertArticles(db: SupabaseClient, sourceId: string, items
           title: a.title,
           excerpt: a.excerpt,
           popularity: a.popularity,
+          comments_count: a.commentsCount,
           relevance_score: a.relevanceScore,
           published_at: a.publishedAt,
         },

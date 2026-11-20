@@ -47,6 +47,7 @@ export function filterArticles(items: Article[], p: ArticleListParams, now = Dat
       (!start || articleTime(a) >= Date.parse(start)),
   );
   if (p.sort === "popular") return out.sort(byNullableDesc((a) => a.popularity, articleTime));
+  if (p.sort === "discussed") return out.sort(byNullableDesc((a) => a.commentsCount, articleTime));
   if (p.sort === "relevant") return out.sort(byNullableDesc((a) => a.relevanceScore, articleTime));
   return out.sort((a, b) => articleTime(b) - articleTime(a));
 }
