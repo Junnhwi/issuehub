@@ -27,13 +27,13 @@ function Metric({ label, value, hint }: { label: string; value: number | null; h
 
 function SyncStatus({ stats }: { stats: Stats }) {
   const last = stats.lastSuccessfulSyncAt;
-  const stale = last ? isOlderThan(last, 13) : true;
+  const stale = last ? isOlderThan(last, 3) : true; // 매시 수집: 3시간 넘게 성공이 없으면 지연
   return (
     <p className="inline-flex items-center gap-2 text-[13px] text-fg-2">
       {last && !stale ? <CheckCircle2 className="size-4 text-success" aria-hidden /> : <TriangleAlert className="size-4 text-warning" aria-hidden />}
       {last ? (
         <span>
-          마지막 성공 수집 <LocalTime iso={last} className="font-medium text-fg" />
+          마지막 성공 수집: <LocalTime iso={last} mode="clock" className="font-medium text-fg" />
           {stale && " · 지연됨"}
         </span>
       ) : (
