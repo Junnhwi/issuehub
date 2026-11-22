@@ -6,7 +6,7 @@
  */
 import { resolveProvider, ProviderError } from "../src/lib/ai/provider";
 import { hasEnoughContent, hasEnoughRepoDescription, type ValidArticleItem } from "../src/lib/ai/schema";
-import { processArticleBatch, processGameBatch, processRepoBatch, type ArticleInput, type GameInput, type ItemResult, type RepoInput } from "../src/lib/ai/summarize";
+import { PROMPT_VERSION, processArticleBatch, processGameBatch, processRepoBatch, type ArticleInput, type GameInput, type ItemResult, type RepoInput } from "../src/lib/ai/summarize";
 import { getWriteClient } from "./lib/db";
 import { intEnv, loadEnv } from "./lib/env";
 
@@ -76,7 +76,7 @@ async function main() {
   const repoRows = repos ?? [];
 
   if (dryRun) {
-    const enough = articles.filter((r) => hasEnoughContent(r.excerpt)).length;
+    const enough = articles.filter((r) => hasEnoughContent(r.excerpt, r.title)).length;
     const repoReady = repoRows.filter((r) => hasEnoughRepoDescription(r.description)).length;
     console.log("번역·요약 미리보기 (AI 호출·DB 쓰기 없음)");
     console.log(`  기사   대기=${articles.length}  제목·발췌 번역=${articles.length}  요약까지=${enough}  번역만(근거 부족)=${articles.length - enough}`);
@@ -125,16 +125,18 @@ async function main() {
   const needsRetry = (r: ItemResult<ValidArticleItem> | undefined) =>
     !r?.ok || (!r.value.summary && r.value.summaryNote !== "INSUFFICIENT_CONTENT" && r.value.summaryNote !== "MODEL_INSUFFICIENT");
   const retry = inputs.filter((i) => needsRetry(results.get(i.key)));
-  for (const batch of chunk(retry, batchSize)) for (const [k, v] of await runArticles(batch)) results.set(k, v);
+  // 재시도는 작은 묶음으로: 긴 항목 하나 때문에 묶음 전체가 실패하는 일을 줄인다
+  for (const batch of chunk(retry, Math.max(1, Math.floor(batchSize / 4)))) for (const [k, v] of await runArticles(batch)) results.set(k, v);
 
   const now = new Date().toISOString();
+  let trackVersion = true;
   for (const input of inputs) {
     const r = results.get(input.key)!;
     const attempts = (attemptsById.get(input.key) ?? 0) + 1;
     let update: Record<string, unknown>;
     if (r.ok) {
       const v = r.value;
-      const base = { title_ko: v.titleKo, excerpt_ko: v.excerptKo, summary_attempts: attempts, summarized_at: now };
+      const base = { title_ko: v.titleKo, excerpt_ko: v.excerptKo, summary_attempts: attempts, summarized_at: now, ...(trackVersion ? { summary_model: `${cfg.name}:${cfg.model}`, summary_prompt_version: PROMPT_VERSION } : {}) };
       if (v.summary) {
         update = { ...base, ...{ summary_ko: v.summary.summaryKo, key_points: v.summary.keyPoints, why_it_matters: v.summary.whyItMatters, use_cases: v.summary.useCases, caveats: v.summary.caveats }, summary_status: "completed", summary_error: null };
         stats.completed++;
@@ -153,7 +155,15 @@ async function main() {
       update = { summary_status: "failed", summary_error: r.code, summary_attempts: attempts, summarized_at: now };
       stats.failed++;
     }
-    const { error: upErr } = await db.from("articles").update(update).eq("id", input.key);
+    let { error: upErr } = await db.from("articles").update(update).eq("id", input.key);
+    if (upErr?.code === "PGRST204" && trackVersion) {
+      // 0008 마이그레이션 전: 모델·프롬프트 버전 열 없이 저장하고 이후로는 보내지 않는다
+      console.warn("! summary_model 열 없음 → 0008_summary_provenance.sql 적용 전까지 모델·프롬프트 버전을 기록하지 않습니다");
+      trackVersion = false;
+      delete update.summary_model;
+      delete update.summary_prompt_version;
+      ({ error: upErr } = await db.from("articles").update(update).eq("id", input.key));
+    }
     if (upErr) throw new Error(`DB_UPDATE:${upErr.code}`);
   }
 

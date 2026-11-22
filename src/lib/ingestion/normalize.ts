@@ -33,22 +33,46 @@ export function toUtcIso(input: string | number | null | undefined): string | nu
 
 /** 구두점을 공백으로 바꾸고 양끝을 패딩해 단어 경계 매칭을 쉽게 한다 */
 function haystack(text: string) {
-  return ` ${text.toLowerCase().replace(/[^\p{L}\p{N}.+#-]+/gu, " ")} `;
+  // 문장 끝 마침표("in Rust.")는 떼고, 단어 안의 점(next.js, 16.2)은 남긴다
+  return ` ${text.toLowerCase().replace(/[^\p{L}\p{N}.+#-]+/gu, " ").replace(/\.+(?=\s|$)/g, " ")} `;
 }
 
 /** 키워드는 단어 시작에서만 매칭(접두 일치). 끝에 공백이 있으면 단어 전체 일치. */
 const matches = (h: string, keyword: string) => h.includes(` ${keyword.trimStart()}`);
 
-/** 등록된 토픽 키워드와 매칭되는 토픽 slug 목록 */
-export function tagTopics(text: string): string[] {
-  const h = haystack(text);
-  return TOPICS.filter((t) => t.keywords.some((k) => matches(h, k))).map((t) => t.slug);
+/**
+ * 토픽별 점수. 강한 키워드: 제목 3점·본문 2점, 제목 전용: 제목 2점, 약한 키워드: 제목 1점·본문 0.5점(서로 다른 단어만 센다).
+ * 2점 이상이면 그 토픽으로 태깅한다 → 강한 단어 하나, 또는 제목의 범용 단어 2개가 있어야 한다.
+ * "FBI agent", "game theory"처럼 범용 단어 하나만 걸린 글은 태깅하지 않는다.
+ */
+export const TOPIC_THRESHOLD = 2;
+export function topicScores(title: string, body = ""): { slug: string; score: number; hits: string[] }[] {
+  const ht = haystack(title);
+  const hb = haystack(body);
+  return TOPICS.map((t) => {
+    let score = 0;
+    const hits: string[] = [];
+    for (const [list, inTitle, inBody] of [[t.keywords, 3, 2], [t.titleKeywords ?? [], 2, 0], [t.weakKeywords ?? [], 1, 0.5]] as const) {
+      for (const k of list) {
+        const pts = matches(ht, k) ? inTitle : matches(hb, k) ? inBody : 0;
+        if (pts) {
+          score += pts;
+          hits.push(k.trim());
+        }
+      }
+    }
+    return { slug: t.slug, score, hits };
+  }).filter((r) => r.score >= TOPIC_THRESHOLD);
 }
 
-/** 연관도 = 매칭된 서로 다른 키워드 수(0~10). 의미를 설명할 수 있는 단순 지표, 매칭 0이면 null */
-export function scoreRelevance(text: string): number | null {
-  const h = haystack(text);
-  const hits = new Set(TOPICS.flatMap((t) => t.keywords.filter((k) => matches(h, k))));
+/** 기준을 넘은 토픽 slug 목록(여러 개 가능). body를 생략하면 text 전체를 제목처럼 본다 */
+export function tagTopics(title: string, body = ""): string[] {
+  return topicScores(title, body).map((r) => r.slug);
+}
+
+/** 연관도 = 태깅된 토픽에서 일치한 서로 다른 키워드 수(1~10). 태깅된 토픽이 없으면 null */
+export function scoreRelevance(title: string, body = ""): number | null {
+  const hits = new Set(topicScores(title, body).flatMap((r) => r.hits));
   return hits.size === 0 ? null : Math.min(hits.size, 10);
 }
 

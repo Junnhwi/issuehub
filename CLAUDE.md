@@ -34,3 +34,4 @@
 - 2026-11-20: Gemini 무료 번역·요약 운영, 수집 매시 20분(Supabase pg_cron → workflow_dispatch, GitHub 예약 41분은 예비), 화제도(HN 점수·댓글)·댓글순 정렬·노션용 복사 추가. 0004_comments_count.sql은 푸시 전에 적용해야 수집이 깨지지 않음.
 - 2026-11-20: Steam 게임 동향(/games, 0006) 추가. Steam 공개 API(featuredcategories, GetMostPlayedGames, IStoreBrowseService/GetItems, GetNumberOfCurrentPlayers) 키 없음. 영어 소개만 AI 번역.
 - 2026-11-20: 게임 상세 가격 추이(0007, ITAD API country=KR shop=61, 키 ITAD_API_KEY). 0007 적용 전 푸시 금지(discount_ends_at 열 없으면 게임 upsert 실패).
+- 2026-11-22: 품질·보안 개선(D22~D27). 수집기 SSRF 방어(`scripts/lib/safe-fetch.ts`), ingest.yml 입력 검증, CSP·HSTS, 토픽 강/약 키워드, 기사 성격·같은 사건 묶기(렌더 시점), AI 요약 원문 대조(숫자·불확실 표현), 홈 정보 구조, 연속 세일 병합. 0008(선택)은 미적용이어도 동작.

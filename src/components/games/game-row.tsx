@@ -64,7 +64,7 @@ export function GameRow({ game: g, rank }: { game: Game; rank?: number }) {
           {g.currentPlayers !== null && g.currentPlayers > 0 && (
             <span className="tabular inline-flex items-center gap-1 text-[13px] text-fg-2" title="수집 시점의 동시접속자 수(Steam 공개 값)">
               <Users className="size-3.5 text-muted" aria-hidden />
-              동시접속 <span className="font-mono font-medium">{g.currentPlayers.toLocaleString("ko-KR")}</span>명
+              현재 동시접속 <span className="font-mono font-medium">{g.currentPlayers.toLocaleString("ko-KR")}</span>명
             </span>
           )}
         </div>

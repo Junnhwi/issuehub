@@ -80,7 +80,7 @@ export default async function GamePage({ params }: Props) {
             {g.currentPlayers !== null && g.currentPlayers > 0 && (
               <span className="tabular inline-flex items-center gap-1 text-[13px] text-fg-2">
                 <Users className="size-3.5 text-muted" aria-hidden />
-                동시접속 {g.currentPlayers.toLocaleString("ko-KR")}명
+                현재 동시접속 {g.currentPlayers.toLocaleString("ko-KR")}명
               </span>
             )}
           </div>
@@ -114,13 +114,13 @@ export default async function GamePage({ params }: Props) {
           <>
             <dl className="my-4 grid grid-cols-2 gap-x-6 gap-y-4 border-y border-line py-4 sm:grid-cols-4">
               <Stat
-                label="현재 가격"
+                label="현재 가격 · Steam 상점"
                 value={g.price?.replace("₩ ", "₩") ?? formatWon(latest!.price)}
                 hint={g.discountPct ? (g.discountEndsAt ? <>-{g.discountPct}% · {day(g.discountEndsAt)}까지</> : <>-{g.discountPct}% 세일 중</>) : "정가"}
               />
               <Stat label="정가" value={formatWon(latest!.regular)} />
-              <Stat label="역대 최저가" value={formatWon(low!.price)} hint={low!.cut ? `-${low!.cut}% · ${day(low!.changedAt)}` : "할인 기록 없음"} />
-              <Stat label="세일 횟수" value={`${sales.length}회`} hint={`${day(history[0].changedAt)} 이후`} />
+              <Stat label="기록상 최저가" value={formatWon(low!.price)} hint={low!.cut ? `-${low!.cut}% · ${day(low!.changedAt)}` : "할인 기록 없음"} />
+              <Stat label="세일 횟수" value={`${sales.length}회`} hint={`기록 시작 ${day(history[0].changedAt)}`} />
             </dl>
 
             <div className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-fg-2">
@@ -136,7 +136,7 @@ export default async function GamePage({ params }: Props) {
                 <span className="h-3 w-4 rounded-sm bg-accent-soft" aria-hidden />
                 세일 기간
               </span>
-              <span className="text-muted">그래프 위에서 마우스 휠을 굴리거나 아래 막대를 끌면 옆으로 이동합니다 · 점에 마우스를 올리면 날짜와 가격</span>
+              <span className="text-muted">그래프는 옆으로 밀거나(휠·막대·터치) 이동합니다 · 정확한 날짜와 가격은 아래 세일 기록 표에 있습니다</span>
             </div>
             <div className="rounded-xl border border-line bg-surface px-2 pt-3">
               <PriceChart points={history} sales={sales} now={now} />
@@ -152,7 +152,7 @@ export default async function GamePage({ params }: Props) {
                       <th className="px-3 py-2 font-medium">종료</th>
                       <th className="px-3 py-2 font-medium">기간</th>
                       <th className="px-3 py-2 text-right font-medium">할인율</th>
-                      <th className="px-3 py-2 text-right font-medium">세일가</th>
+                      <th className="px-3 py-2 text-right font-medium">최저 세일가</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-line">
@@ -161,7 +161,7 @@ export default async function GamePage({ params }: Props) {
                         <td className="tabular px-3 py-2">{day(s.start)}</td>
                         <td className="tabular px-3 py-2">{s.end ? day(s.end) : g.discountEndsAt ? `${day(g.discountEndsAt)} 예정` : "진행 중"}</td>
                         <td className="tabular px-3 py-2 text-muted">{days(s.start, s.end, now)}일</td>
-                        <td className="tabular px-3 py-2 text-right font-mono font-semibold">-{s.cut}%</td>
+                        <td className="tabular px-3 py-2 text-right font-mono font-semibold">{s.minCut !== s.cut ? `-${s.minCut}~${s.cut}%` : `-${s.cut}%`}</td>
                         <td className="tabular px-3 py-2 text-right font-mono">{formatWon(s.price)}</td>
                       </tr>
                     ))}
@@ -175,7 +175,7 @@ export default async function GamePage({ params }: Props) {
         )}
 
         <p className="mt-4 text-xs leading-relaxed text-muted">
-          가격 기록: <a href="https://isthereanydeal.com/" target="_blank" rel="noopener noreferrer" className="text-accent-fg hover:underline">IsThereAnyDeal</a> API의 한국(KR) Steam 기록을 그대로 표시합니다. 현재 세일 종료일은 Steam 상점 정보입니다. IssueHub는 IsThereAnyDeal과 제휴 관계가 아닙니다.
+          가격 기록: <a href="https://isthereanydeal.com/" target="_blank" rel="noopener noreferrer" className="text-accent-fg hover:underline">IsThereAnyDeal</a> API의 한국(KR) Steam 원화 기록을 그대로 표시합니다. &lsquo;기록상 최저가&rsquo;와 세일 횟수는 기록이 시작된 날 이후만 셉니다(KR 기록은 2024년 12월부터). 현재 가격과 세일 종료 예정일은 Steam 상점 값이며, 종료 예정일은 실제 종료 기록과 다를 수 있습니다. IssueHub는 IsThereAnyDeal과 제휴 관계가 아닙니다.
           {!g.isDemo && latest && (
             <>
               {" "}

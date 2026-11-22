@@ -2,6 +2,7 @@ import { ArrowUpRight, MessagesSquare, PenLine, ShieldCheck, Sparkles, Users } f
 import Link from "next/link";
 import type { Article, SourceTier } from "@/types";
 import { cn, hostOf } from "@/lib/utils";
+import { ARTICLE_KIND_LABEL, articleKind } from "@/lib/article-kind";
 import { LocalTime } from "@/components/ui/local-time";
 import { articleBookmark } from "./article-card";
 import { BookmarkButton } from "./bookmark-button";
@@ -49,10 +50,43 @@ export function SourceLinks({ article: a, compact = false }: { article: Article;
 }
 
 /**
+ * 발행처 표시. HN 글은 HN이 발견·토론 출처일 뿐이므로 원문 도메인을 발행처로 보여 준다.
+ * 출처 유형·화제도는 신뢰도나 사실 여부를 뜻하지 않는다.
+ */
+export function Publisher({ article: a }: { article: Article }) {
+  const host = hostOf(a.originalUrl);
+  if (a.source.kind === "hackernews" && host !== "news.ycombinator.com") {
+    return (
+      <>
+        <span className="font-medium text-fg-2">{host}</span>
+        <span title="Hacker News에서 발견한 글입니다. 발행처는 원문 도메인이며, HN 점수·댓글은 관심도일 뿐 사실 여부와 관계없습니다.">HN에서 발견</span>
+      </>
+    );
+  }
+  return (
+    <>
+      <span className="font-medium text-fg-2">{a.source.name}</span>
+      <TierLabel tier={a.source.tier} />
+    </>
+  );
+}
+
+/** 기사 성격(제목 기준 자동 분류). 기본값인 뉴스·의견은 표시하지 않는다 */
+export function KindLabel({ article: a }: { article: Article }) {
+  const kind = articleKind(a.title, a.originalUrl);
+  if (kind === "news") return null;
+  return (
+    <span className="text-fg-2" title="제목·주소 기준 자동 분류입니다(내용 검증 아님)">
+      {ARTICLE_KIND_LABEL[kind]}
+    </span>
+  );
+}
+
+/**
  * 이슈 한 줄. 토픽 → 제목 → 요약 → 출처·링크 순서로 읽힌다.
  * 요약이 완료된 글은 AI 요약을, 아니면 발췌(한국어 번역이 있으면 번역)를 보조로 보여 준다.
  */
-export function ArticleRow({ article: a, dense = false }: { article: Article; dense?: boolean }) {
+export function ArticleRow({ article: a, dense = false, related = [] }: { article: Article; dense?: boolean; related?: Article[] }) {
   const done = a.summaryStatus === "completed" && !!a.summaryKo;
   const preview = done ? a.summaryKo : (a.excerptKo ?? a.excerpt);
   const korean = done || !!a.excerptKo;
@@ -102,8 +136,8 @@ export function ArticleRow({ article: a, dense = false }: { article: Article; de
         <div className={cn("flex flex-wrap items-center justify-between gap-x-3 gap-y-2", dense ? "mt-2.5" : "mt-4")}>
           <div className="flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1 text-[13px] text-muted">
             <Engagement article={a} />
-            <span className="font-medium text-fg-2">{a.source.name}</span>
-            <TierLabel tier={a.source.tier} />
+            <Publisher article={a} />
+            <KindLabel article={a} />
             {demo && <span className="font-medium text-warning">데모</span>}
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
@@ -111,6 +145,16 @@ export function ArticleRow({ article: a, dense = false }: { article: Article; de
             <BookmarkButton item={articleBookmark(a)} ghost />
           </div>
         </div>
+        {related.length > 0 && (
+          <p className="relative z-10 mt-2.5 flex flex-wrap gap-x-2 gap-y-1 text-[13px] text-muted">
+            <span>같은 소식 다른 출처 {related.length}</span>
+            {related.map((r) => (
+              <Link key={r.id} href={`/articles/${r.id}`} className="font-medium text-fg-2 underline-offset-2 hover:text-fg hover:underline" title={r.titleKo ?? r.title}>
+                {hostOf(r.originalUrl)}
+              </Link>
+            ))}
+          </p>
+        )}
       </div>
     </li>
   );

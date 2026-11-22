@@ -17,4 +17,4 @@ export function buzzLevel(points: number | null, comments: number | null): BuzzL
   return null;
 }
 
-export const BUZZ_EXPLAIN = `Hacker News 점수 ${BUZZ_RULES.hot.points}점 또는 댓글 ${BUZZ_RULES.hot.comments}개 이상이면 '큰 화제', ${BUZZ_RULES.rising.points}점 또는 ${BUZZ_RULES.rising.comments}개 이상이면 '화제'. IssueHub가 마지막으로 수집한 시점의 값입니다.`;
+export const BUZZ_EXPLAIN = `Hacker News 점수 ${BUZZ_RULES.hot.points}점 또는 댓글 ${BUZZ_RULES.hot.comments}개 이상이면 '큰 화제', ${BUZZ_RULES.rising.points}점 또는 ${BUZZ_RULES.rising.comments}개 이상이면 '화제'. IssueHub가 마지막으로 수집한 시점의 값입니다. 관심도일 뿐 내용의 사실 여부와는 관계없습니다.`;

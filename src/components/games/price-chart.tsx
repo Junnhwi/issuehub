@@ -103,7 +103,7 @@ export function PriceChart({ points, sales, now }: { points: PricePoint[]; sales
               return (
                 <g key={s.start}>
                   <rect x={a} y={PAD.top} width={Math.max(b - a, 3)} height={H - PAD.top - PAD.bottom} fill="var(--accent-soft)">
-                    <title>{`${fmtDate(Date.parse(s.start))} ~ ${s.end ? fmtDate(Date.parse(s.end)) : "진행 중"} · ${s.cut}% 할인 · ${formatWon(s.price)}`}</title>
+                    <title>{`${fmtDate(Date.parse(s.start))} ~ ${s.end ? fmtDate(Date.parse(s.end)) : "진행 중"} · ${s.minCut !== s.cut ? `${s.minCut}~${s.cut}` : s.cut}% 할인 · 최저 ${formatWon(s.price)}`}</title>
                   </rect>
                   {labelX[si] !== null && (
                     <text x={labelX[si]!} y={PAD.top - 10} textAnchor="middle" fontSize={12} fontWeight={600} fill="var(--text-2)">

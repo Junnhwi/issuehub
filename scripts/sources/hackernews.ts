@@ -1,6 +1,7 @@
 import { normalizeUrl, scoreRelevance, stripHtml, tagTopics, toUtcIso } from "../../src/lib/ingestion/normalize";
 import type { NormalizedArticle } from "../../src/lib/ingestion/types";
-import { fetchJson, fetchWithRetry, mapLimit } from "../lib/http";
+import { fetchJson, mapLimit } from "../lib/http";
+import { safeFetchText } from "../lib/safe-fetch";
 
 const API = "https://hacker-news.firebaseio.com/v0";
 
@@ -25,8 +26,7 @@ export function normalizeHnItem(item: HnItem): NormalizedArticle | null {
   const normalizedUrl = normalizeUrl(originalUrl);
   if (!normalizedUrl) return null;
   const excerpt = stripHtml(item.text);
-  const text = `${item.title} ${excerpt ?? ""}`;
-  const topics = tagTopics(text);
+  const topics = tagTopics(item.title, excerpt ?? "");
   if (topics.length === 0) return null;
   return {
     sourceItemId: String(item.id),
@@ -38,7 +38,7 @@ export function normalizeHnItem(item: HnItem): NormalizedArticle | null {
     popularity: item.score ?? null,
     commentsCount: item.descendants ?? null,
     topics,
-    relevanceScore: scoreRelevance(text),
+    relevanceScore: scoreRelevance(item.title, excerpt ?? ""),
   };
 }
 
@@ -50,25 +50,10 @@ export function extractMetaDescription(html: string): string | null {
   return m ? stripHtml(m[1], 400) : null;
 }
 
+/** 원문 앞부분(최대 64KB, <head>까지)만 SSRF 검사를 거쳐 읽는다 */
 async function fetchMetaDescription(url: string): Promise<string | null> {
-  try {
-    const res = await fetchWithRetry(url, { headers: { Accept: "text/html" } }, { retries: 0, timeoutMs: 6000 });
-    if (!res.headers.get("content-type")?.includes("text/html") || !res.body) return null;
-    // 앞부분 64KB만 읽는다(<head> 메타데이터용)
-    const reader = res.body.getReader();
-    let html = "";
-    const decoder = new TextDecoder();
-    while (html.length < 65536) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      html += decoder.decode(value, { stream: true });
-      if (html.includes("</head>")) break;
-    }
-    await reader.cancel().catch(() => {});
-    return extractMetaDescription(html);
-  } catch {
-    return null;
-  }
+  const html = await safeFetchText(url, { maxBytes: 65_536, timeoutMs: 6000, accept: ["text/html", "application/xhtml+xml"], stopAt: "</head>" });
+  return html ? extractMetaDescription(html) : null;
 }
 
 export async function fetchHackerNews(limit: number): Promise<NormalizedArticle[]> {

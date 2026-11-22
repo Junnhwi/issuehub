@@ -25,6 +25,10 @@ export interface Topic {
   color: string;
   description: string;
   keywords: string[];
+  /** 혼자서는 태깅하지 않는 범용 단어 */
+  weakKeywords?: string[];
+  /** 제목에 있을 때만 태깅하는 단어 */
+  titleKeywords?: string[];
 }
 
 export interface TopicWithCounts extends Topic {
@@ -137,7 +141,10 @@ export interface SalePeriod {
   start: string;
   /** 진행 중이면 null */
   end: string | null;
+  /** 세일 중 가장 큰 할인율(중간에 할인율이 바뀌면 minCut과 다름) */
   cut: number;
+  minCut: number;
+  /** 세일 중 가장 낮은 가격 */
   price: number;
   regular: number;
 }

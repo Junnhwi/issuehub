@@ -46,10 +46,24 @@ export function releaseLabel(unix: number | undefined, display: string | undefin
  * 연속된 할인 기록(할인율만 바뀐 경우)은 각각 별도 기간으로 둔다.
  */
 export function salePeriods(points: PricePoint[]): SalePeriod[] {
+  // 할인이 이어지는 동안 가격만 바뀐 기록(-30% → -50%)은 하나의 세일로 합친다. 정가로 돌아온 시점이 종료
   const sorted = [...points].sort((a, b) => Date.parse(a.changedAt) - Date.parse(b.changedAt));
-  return sorted.flatMap((p, i) =>
-    p.cut > 0 ? [{ start: p.changedAt, end: sorted[i + 1]?.changedAt ?? null, cut: p.cut, price: p.price, regular: p.regular }] : [],
-  );
+  const out: SalePeriod[] = [];
+  sorted.forEach((p, i) => {
+    const prev = sorted[i - 1];
+    if (p.cut <= 0) {
+      if (prev && prev.cut > 0) out[out.length - 1].end = p.changedAt;
+      return;
+    }
+    const cur = out.at(-1);
+    if (prev && prev.cut > 0 && cur) {
+      cur.cut = Math.max(cur.cut, p.cut);
+      cur.minCut = Math.min(cur.minCut, p.cut);
+      cur.price = Math.min(cur.price, p.price);
+      cur.regular = p.regular;
+    } else out.push({ start: p.changedAt, end: null, cut: p.cut, minCut: p.cut, price: p.price, regular: p.regular });
+  });
+  return out;
 }
 
 export const formatWon = (n: number) => `₩${Math.round(n).toLocaleString("ko-KR")}`;

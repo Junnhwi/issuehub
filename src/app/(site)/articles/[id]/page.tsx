@@ -6,6 +6,7 @@ import { getData } from "@/lib/data";
 import { uuidSchema } from "@/lib/validation/params";
 import { toNotionMarkdown } from "@/lib/notion-markdown";
 import { cn, hostOf } from "@/lib/utils";
+import { ARTICLE_KIND_LABEL, articleKind } from "@/lib/article-kind";
 import { articleBookmark } from "@/components/articles/article-card";
 import { ArticleList, ArticleRow } from "@/components/articles/article-row";
 import { DemoBadge, SummaryStatusBadge, TierBadge, TopicTag } from "@/components/articles/badges";
@@ -33,6 +34,9 @@ export default async function ArticlePage({ params }: Props) {
   if (!res) notFound();
   const { article: a, related } = res;
   const hasReaction = a.popularity !== null || a.commentsCount !== null;
+  const kind = articleKind(a.title, a.originalUrl);
+  // HN은 발견·토론 출처이고 실제 발행처는 원문 도메인이다
+  const viaHn = a.source.kind === "hackernews" && hostOf(a.originalUrl) !== "news.ycombinator.com";
 
   return (
     <div className="mx-auto max-w-[780px]">
@@ -50,7 +54,12 @@ export default async function ArticlePage({ params }: Props) {
           </div>
           <div className="mb-3 flex flex-wrap items-center gap-1.5">
             {a.source.kind === "demo" && <DemoBadge />}
-            <TierBadge tier={a.source.tier} />
+            {!viaHn && <TierBadge tier={a.source.tier} />}
+            {kind !== "news" && (
+              <span className="inline-flex h-6 items-center rounded-full border border-line px-2.5 text-[12px] font-medium text-fg-2" title="제목·주소 기준 자동 분류입니다(내용 검증 아님)">
+                {ARTICLE_KIND_LABEL[kind]}
+              </span>
+            )}
             <SummaryStatusBadge status={a.summaryStatus} sourceKind={a.source.kind} />
             <BuzzBadge article={a} />
           </div>
@@ -64,16 +73,21 @@ export default async function ArticlePage({ params }: Props) {
           <dl className={cn("mt-5 grid gap-x-6 gap-y-3 rounded-xl border border-line bg-surface/60 p-4 text-[13px] sm:grid-cols-3", hasReaction && "md:grid-cols-4")}>
             {hasReaction && (
               <div>
-                <dt className="text-muted">커뮤니티 반응</dt>
+                <dt className="text-muted" title="관심도일 뿐 내용의 사실 여부와는 관계없습니다">HN 반응</dt>
                 <dd className="mt-1">
                   <Engagement article={a} className="text-[15px]" />
                 </dd>
               </div>
             )}
             <div>
-              <dt className="text-muted">원출처</dt>
+              <dt className="text-muted">{viaHn ? "발행처" : "원출처"}</dt>
               <dd className="mt-0.5 font-medium">
-                {a.source.homepageUrl ? (
+                {viaHn ? (
+                  <>
+                    {hostOf(a.originalUrl)}
+                    <span className="block text-xs font-normal text-muted">Hacker News에서 발견</span>
+                  </>
+                ) : a.source.homepageUrl ? (
                   <a href={a.source.homepageUrl} target="_blank" rel="noopener noreferrer" className="hover:text-accent-fg hover:underline">
                     {a.source.name}
                   </a>

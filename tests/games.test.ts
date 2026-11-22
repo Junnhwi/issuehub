@@ -80,8 +80,15 @@ describe("price history", () => {
   it("turns discounted entries into sale periods ending at the next change", () => {
     const sales = salePeriods([p("2026-03-15T00:00:00Z", 10000, 0), p("2026-03-01T00:00:00Z", 5000, 50), p("2026-06-01T00:00:00Z", 7000, 30)]);
     expect(sales).toEqual([
-      { start: "2026-03-01T00:00:00Z", end: "2026-03-15T00:00:00Z", cut: 50, price: 5000, regular: 10000 },
-      { start: "2026-06-01T00:00:00Z", end: null, cut: 30, price: 7000, regular: 10000 },
+      { start: "2026-03-01T00:00:00Z", end: "2026-03-15T00:00:00Z", cut: 50, minCut: 50, price: 5000, regular: 10000 },
+      { start: "2026-06-01T00:00:00Z", end: null, cut: 30, minCut: 30, price: 7000, regular: 10000 },
+    ]);
+  });
+  it("merges price changes inside one continuous sale", () => {
+    const sales = salePeriods([p("2026-03-01T00:00:00Z", 7000, 30), p("2026-03-05T00:00:00Z", 5000, 50), p("2026-03-10T00:00:00Z", 10000, 0), p("2026-04-01T00:00:00Z", 8000, 20)]);
+    expect(sales).toEqual([
+      { start: "2026-03-01T00:00:00Z", end: "2026-03-10T00:00:00Z", cut: 50, minCut: 30, price: 5000, regular: 10000 },
+      { start: "2026-04-01T00:00:00Z", end: null, cut: 20, minCut: 20, price: 8000, regular: 10000 },
     ]);
   });
   it("keeps only Steam entries with a price, values unchanged", () => {

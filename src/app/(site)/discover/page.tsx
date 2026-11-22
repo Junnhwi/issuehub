@@ -115,11 +115,18 @@ export default async function DiscoverPage({ searchParams }: { searchParams: SP 
         <EmptyState
           icon={SearchX}
           title="조건에 맞는 이슈가 없습니다"
-          description="검색어를 줄이거나 기간을 넓혀 보세요."
+          description={params.q ? "검색어를 줄이거나 다른 표현(영문 제품명 등)으로 바꿔 보세요. 토픽·기간 필터가 결과를 좁히고 있을 수도 있습니다." : "기간을 넓히거나 토픽·출처 필터를 풀어 보세요."}
           action={
-            <Link href="/discover" className={buttonClass("secondary", "sm")}>
-              필터 초기화
-            </Link>
+            <span className="flex flex-wrap justify-center gap-2">
+              {params.q && (params.topic || params.source || params.period !== "all") && (
+                <Link href={`/discover?q=${encodeURIComponent(params.q)}`} className={buttonClass("secondary", "sm")}>
+                  검색어만 남기고 필터 해제
+                </Link>
+              )}
+              <Link href="/discover" className={buttonClass("secondary", "sm")}>
+                모두 초기화
+              </Link>
+            </span>
           }
         />
       )}

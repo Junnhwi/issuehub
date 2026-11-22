@@ -45,10 +45,11 @@ export function SidebarNav({ onNavigate, expanded = false }: { onNavigate?: () =
 
 export function MobileTabBar() {
   const pathname = usePathname();
-  const items = NAV_ITEMS.filter((i) => i.href !== "/about");
+  // 하단 탭은 자주 쓰는 5개만. Topics(각 목록의 토픽 필터와 겹침)와 About은 상단 전체 메뉴에서 연다
+  const items = NAV_ITEMS.filter((i) => i.href !== "/about" && i.href !== "/topics");
   return (
     <nav aria-label="하단 메뉴" className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
-      <ul className="grid grid-cols-6">
+      <ul className="grid grid-cols-5">
         {items.map(({ href, label, icon: Icon }) => {
           const active = isActive(pathname, href);
           return (
@@ -56,7 +57,7 @@ export function MobileTabBar() {
               <Link
                 href={href}
                 aria-current={active ? "page" : undefined}
-                className={cn("flex h-16 flex-col items-center justify-center gap-1 text-[11px] font-medium", active ? "text-accent-fg" : "text-muted")}
+                className={cn("flex h-16 flex-col items-center justify-center gap-1 text-[12px] font-medium", active ? "text-accent-fg" : "text-muted")}
               >
                 <Icon className="size-5" aria-hidden />
                 {label}

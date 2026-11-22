@@ -39,7 +39,6 @@ export function parseFeed(xml: string, limit: number): NormalizedArticle[] {
     if (!normalizedUrl) continue;
     const title = stripHtml(r.title, 300)!;
     const excerpt = stripHtml(r.summary, 600);
-    const all = `${title} ${excerpt ?? ""}`;
     out.push({
       sourceItemId: r.guid?.slice(0, 300) ?? null,
       originalUrl: r.link,
@@ -49,15 +48,22 @@ export function parseFeed(xml: string, limit: number): NormalizedArticle[] {
       publishedAt: toUtcIso(r.date),
       popularity: null,
       commentsCount: null,
-      topics: tagTopics(all),
-      relevanceScore: scoreRelevance(all),
+      topics: tagTopics(title, excerpt ?? ""),
+      relevanceScore: scoreRelevance(title, excerpt ?? ""),
     });
     if (out.length >= limit) break;
   }
   return out;
 }
 
+const MAX_FEED_BYTES = 5_000_000;
+
 export async function fetchRss(feedUrl: string, limit: number): Promise<NormalizedArticle[]> {
   const res = await fetchWithRetry(feedUrl, { headers: { Accept: "application/rss+xml, application/atom+xml, application/xml" } });
-  return parseFeed(await res.text(), limit);
+  // 피드는 등록된 공식 주소만 쓰지만, 비정상적으로 큰 응답이 메모리를 잡아먹지 않게 상한을 둔다
+  const declared = Number(res.headers.get("content-length"));
+  if (declared > MAX_FEED_BYTES) throw new Error("FEED_TOO_LARGE");
+  const body = await res.text();
+  if (body.length > MAX_FEED_BYTES) throw new Error("FEED_TOO_LARGE");
+  return parseFeed(body, limit);
 }

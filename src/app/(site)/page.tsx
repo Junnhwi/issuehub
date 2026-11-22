@@ -2,8 +2,9 @@ import { ArrowRight, CheckCircle2, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import { getData } from "@/lib/data";
 import { formatCount, isOlderThan } from "@/lib/utils";
+import { groupSameEvent } from "@/lib/same-event";
 import { ArticleCard } from "@/components/articles/article-card";
-import { ArticleList, ArticleRow, TierLabel } from "@/components/articles/article-row";
+import { ArticleList, ArticleRow } from "@/components/articles/article-row";
 import { RepoCard } from "@/components/github/repo-card";
 import { GameCompactRow } from "@/components/games/game-row";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -12,19 +13,6 @@ import { SectionTitle } from "@/components/ui/page-header";
 import type { Stats } from "@/types";
 
 export const dynamic = "force-dynamic";
-
-/** 지표는 상자 없이 한 줄 띠로(스킬: 카드 남용 금지, 숫자는 고정폭) */
-function Metric({ label, value, hint }: { label: string; value: number | null; hint: string }) {
-  return (
-    <div className="py-4 sm:px-6 sm:py-1 sm:first:pl-0">
-      <dt className="text-[13px] font-medium text-muted">{label}</dt>
-      <dd className="tabular mt-1.5 font-mono text-[30px] font-semibold leading-none tracking-tight text-fg">
-        {value === null ? <span className="text-muted">—</span> : value.toLocaleString("ko-KR")}
-      </dd>
-      <dd className="mt-2 text-xs text-muted">{value === null ? "아직 집계되지 않았습니다" : hint}</dd>
-    </div>
-  );
-}
 
 function SyncStatus({ stats }: { stats: Stats }) {
   const last = stats.lastSuccessfulSyncAt;
@@ -62,16 +50,19 @@ function RailSection({ id, title, action, note, children }: { id: string; title:
 
 export default async function DashboardPage() {
   const data = getData();
-  const [stats, popular, latest, repos, topics, sources, games] = await Promise.all([
+  const [stats, popular, latest, repos, topics, games] = await Promise.all([
     data.getStats(),
-    data.listArticles({ period: "7d", sort: "popular", limit: 4 }),
-    data.listArticles({ period: "all", sort: "latest", limit: 10 }),
-    data.listRepos({ sort: "growth", limit: 5 }),
+    // 같은 사건을 다룬 글을 묶으면 개수가 줄어들므로 넉넉히 받는다
+    data.listArticles({ period: "7d", sort: "popular", limit: 10 }),
+    data.listArticles({ period: "all", sort: "latest", limit: 24 }),
+    data.listRepos({ sort: "growth", limit: 6 }),
     data.listTopics(),
-    data.listSources(),
     data.listGames("most_played"),
   ]);
-  const [featured, ...others] = popular.items;
+  const [featured, ...others] = groupSameEvent(popular.items).slice(0, 4);
+  const shownTop = new Set([featured, ...others].flatMap((g) => (g ? [g.item.id, ...g.related.map((r) => r.id)] : [])));
+  // 화제의 이슈에 이미 나온 글은 최신 이슈에서 빼 같은 글이 두 번 보이지 않게 한다
+  const latestGroups = groupSameEvent(latest.items.filter((a) => !shownTop.has(a.id))).slice(0, 10);
   const topTopics = [...topics].sort((a, b) => (b.articleCount ?? 0) - (a.articleCount ?? 0));
 
   return (
@@ -89,16 +80,6 @@ export default async function DashboardPage() {
         <SyncStatus stats={stats} />
       </section>
 
-      <dl aria-label="주요 지표" className="grid divide-y divide-line border-y border-line sm:grid-cols-[1.2fr_1fr_1fr] sm:divide-x sm:divide-y-0 sm:py-5">
-        <Metric label="최근 24시간 수집 기사" value={stats.articlesLast24h} hint={stats.basis} />
-        <Metric label="추적 중인 저장소" value={stats.reposTotal} hint="매일 Star 수를 기록합니다" />
-        <Metric
-          label="한국어 요약 완료"
-          value={stats.summariesCompleted}
-          hint={stats.mode === "demo" ? "데모 예시 요약 수 · AI 생성 아님" : "검증을 통과한 AI 요약"}
-        />
-      </dl>
-
       <div className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_300px]">
         <div className="min-w-0 space-y-10">
           <section aria-labelledby="top-title">
@@ -113,11 +94,11 @@ export default async function DashboardPage() {
             />
             {featured ? (
               <div className="grid gap-4 lg:grid-cols-[1.1fr_1fr] lg:items-start">
-                <ArticleCard article={featured} variant="featured" />
+                <ArticleCard article={featured.item} related={featured.related} variant="featured" />
                 {others.length > 0 && (
                   <ArticleList>
-                    {others.map((a) => (
-                      <ArticleRow key={a.id} article={a} dense />
+                    {others.map((g) => (
+                      <ArticleRow key={g.item.id} article={g.item} related={g.related} dense />
                     ))}
                   </ArticleList>
                 )}
@@ -125,6 +106,24 @@ export default async function DashboardPage() {
             ) : (
               <EmptyState title="최근 7일간 수집된 이슈가 없습니다" description="수집기가 실행되면 이곳에 표시됩니다." />
             )}
+          </section>
+
+          <section aria-labelledby="repos-title">
+            <SectionTitle
+              id="repos-title"
+              title="최근 주목받는 GitHub 저장소"
+              action={
+                <Link href="/github?sort=growth" className="inline-flex items-center gap-1 text-[13px] font-medium text-accent-fg hover:underline">
+                  Star 증가순 <ArrowRight className="size-3.5" aria-hidden />
+                </Link>
+              }
+            />
+            <p className="-mt-2 mb-3 text-[13px] text-muted">IssueHub가 직접 기록한 Star 스냅샷 기준입니다(GitHub 공식 Trending 아님). 관측 기간이 짧으면 &lsquo;집계 중&rsquo;으로 표시합니다.</p>
+            <ul className="grid gap-x-4 rounded-2xl border border-line bg-surface p-2 sm:grid-cols-2">
+              {repos.items.map((r) => (
+                <RepoCard key={r.id} repo={r} compact />
+              ))}
+            </ul>
           </section>
 
           <section aria-labelledby="latest-title">
@@ -137,10 +136,10 @@ export default async function DashboardPage() {
                 </Link>
               }
             />
-            {latest.items.length ? (
+            {latestGroups.length ? (
               <ArticleList>
-                {latest.items.map((a) => (
-                  <ArticleRow key={a.id} article={a} />
+                {latestGroups.map((g) => (
+                  <ArticleRow key={g.item.id} article={g.item} related={g.related} />
                 ))}
               </ArticleList>
             ) : (
@@ -150,23 +149,6 @@ export default async function DashboardPage() {
         </div>
 
         <aside className="space-y-5 xl:sticky xl:top-24 xl:self-start" aria-label="보조 정보">
-          <RailSection
-            id="rail-repos"
-            title="IssueHub 주목 저장소"
-            note="GitHub 공식 Trending이 아닙니다 · 직접 기록한 스냅샷 기준"
-            action={
-              <Link href="/github?sort=growth" className="text-xs font-medium text-accent-fg hover:underline">
-                더 보기
-              </Link>
-            }
-          >
-            <ul className="-mx-3">
-              {repos.items.map((r) => (
-                <RepoCard key={r.id} repo={r} compact />
-              ))}
-            </ul>
-          </RailSection>
-
           {games.items.length > 0 && (
             <RailSection
               id="rail-games"
@@ -205,21 +187,6 @@ export default async function DashboardPage() {
             </ul>
           </RailSection>
 
-          <RailSection id="rail-sources" title="최근 수집 출처">
-            <ul className="space-y-3">
-              {sources.map((s) => (
-                <li key={s.slug} className="flex items-baseline justify-between gap-3 text-[13px]">
-                  <span className="min-w-0">
-                    <span className="block truncate font-medium text-fg-2">{s.name}</span>
-                    <span className="text-xs text-muted">{s.lastFetchedAt ? <LocalTime iso={s.lastFetchedAt} /> : "수집 기록 없음"}</span>
-                  </span>
-                  <span className="shrink-0 text-xs">
-                    <TierLabel tier={s.tier} />
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </RailSection>
         </aside>
       </div>
 

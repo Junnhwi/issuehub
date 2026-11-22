@@ -37,11 +37,13 @@ export function GrowthBadge({ repo }: { repo: Repository }) {
     );
   }
   const { delta, fromDate, toDate } = repo.growth;
+  // 실제 관측 기간을 그대로 보여 준다(3일치 데이터를 7일 증가량이라 부르지 않음)
+  const days = Math.max(1, Math.round((Date.parse(toDate) - Date.parse(fromDate)) / 86_400_000));
   return (
-    <Badge tone={delta > 0 ? "success" : "neutral"} title={`${fromDate} → ${toDate} 관측 스냅샷 기준`}>
+    <Badge tone={delta > 0 ? "success" : "neutral"} title={`${fromDate} → ${toDate} 관측 스냅샷 기준 (${days}일간)`}>
       <TrendingUp className="size-3.5" aria-hidden />
       <span className="tabular">{formatSigned(delta)}</span>
-      <span className="font-normal opacity-80">관측</span>
+      <span className="font-normal opacity-80">{days}일</span>
     </Badge>
   );
 }

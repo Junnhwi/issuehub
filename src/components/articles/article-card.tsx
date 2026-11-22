@@ -5,7 +5,8 @@ import { LocalTime } from "@/components/ui/local-time";
 import { BookmarkButton } from "./bookmark-button";
 import { TopicTag } from "./badges";
 import { BuzzBadge, Engagement } from "./buzz";
-import { SourceLinks, TierLabel } from "./article-row";
+import { hostOf } from "@/lib/utils";
+import { KindLabel, Publisher, SourceLinks } from "./article-row";
 
 export function articleBookmark(a: Article) {
   return {
@@ -20,7 +21,7 @@ export function articleBookmark(a: Article) {
 }
 
 /** 대시보드의 대표 이슈 하나. 위계를 표현해야 하는 곳이라 이것만 카드로 띄운다. */
-export function ArticleCard({ article: a }: { article: Article; variant?: "featured" }) {
+export function ArticleCard({ article: a, related = [] }: { article: Article; variant?: "featured"; related?: Article[] }) {
   const done = a.summaryStatus === "completed" && !!a.summaryKo;
   const demo = a.source.kind === "demo";
   const time = a.publishedAt ?? a.fetchedAt;
@@ -84,8 +85,8 @@ export function ArticleCard({ article: a }: { article: Article; variant?: "featu
       <div className="mt-5 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-t border-line pt-4">
         <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[13px] text-muted">
           <Engagement article={a} />
-          <span className="font-medium text-fg-2">{a.source.name}</span>
-          <TierLabel tier={a.source.tier} />
+          <Publisher article={a} />
+          <KindLabel article={a} />
           {demo && <span className="font-medium text-warning">데모</span>}
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
@@ -93,6 +94,16 @@ export function ArticleCard({ article: a }: { article: Article; variant?: "featu
           <BookmarkButton item={articleBookmark(a)} ghost />
         </div>
       </div>
+      {related.length > 0 && (
+        <p className="relative z-10 mt-3 flex flex-wrap gap-x-2 gap-y-1 text-[13px] text-muted">
+          <span>같은 소식 다른 출처 {related.length}</span>
+          {related.map((r) => (
+            <Link key={r.id} href={`/articles/${r.id}`} className="font-medium text-fg-2 underline-offset-2 hover:text-fg hover:underline" title={r.titleKo ?? r.title}>
+              {hostOf(r.originalUrl)}
+            </Link>
+          ))}
+        </p>
+      )}
     </article>
   );
 }

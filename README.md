@@ -55,6 +55,7 @@ npm run dev
    5. [`0005_hourly_ingest_trigger.sql`](supabase/migrations/0005_hourly_ingest_trigger.sql) — 매시 20분 자동 수집 요청(선택, 아래 "정시 자동 수집" 참고)
    6. [`0006_steam_games.sql`](supabase/migrations/0006_steam_games.sql) — Steam 게임 테이블과 `steam` 출처
    7. [`0007_game_price_history.sql`](supabase/migrations/0007_game_price_history.sql) — 한국 Steam 가격 이력·세일 종료일(적용 전에 푸시하면 게임 수집이 실패)
+   8. [`0008_summary_provenance.sql`](supabase/migrations/0008_summary_provenance.sql) — (선택) 요약을 만든 모델·프롬프트 버전 기록. 적용 전에도 요약기는 동작(기록만 건너뜀)
 3. **키 확인** — Project Settings → API Keys에서 Project URL, Publishable key, Secret key를 복사합니다.
 4. **GitHub 토큰(선택, 권장)** — GitHub Settings → Developer settings → Fine-grained token(권한 없음, public repo 읽기만)을 발급합니다. 없으면 검색 API 한도가 분당 10회로 줄어듭니다.
 5. **`.env.local` 작성**

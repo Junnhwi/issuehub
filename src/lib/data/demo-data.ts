@@ -292,7 +292,7 @@ export const DEMO_ARTICLES: Article[] = ARTICLES.map((a, i) => ({
   popularity: a.popularity,
   // 데모용 가상 댓글 수(점수에 비례). 실데이터는 HN이 제공한 값만 쓴다
   commentsCount: a.popularity === null ? null : Math.round(a.popularity * 0.45),
-  relevanceScore: scoreRelevance(`${a.title} ${a.excerpt ?? ""}`),
+  relevanceScore: scoreRelevance(a.title, a.excerpt ?? ""),
   publishedAt: hoursAgo(a.hours + 1),
   fetchedAt: hoursAgo(a.hours),
   summarizedAt: a.status === "completed" ? hoursAgo(a.hours - 0.5) : null,

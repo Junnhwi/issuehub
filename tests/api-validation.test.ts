@@ -47,7 +47,8 @@ describe("AI summary validation", () => {
     confidenceNotes: "발췌 기반",
   };
   const item: ArticleItemOutput = { id: "a1", titleKo: "<b>새 기능</b> 출시", excerptKo: "발췌 번역입니다.", summarizable: true, ...fields };
-  const longExcerpt = "x".repeat(120);
+  const longExcerpt = "The release adds schema validation for structured outputs, retry hooks for failed parses, and a compatibility mode for older clients.";
+  const title = "Kestrel SDK adds validation";
 
   it("caps counts and keeps only registered topics", () => {
     const v = validateSummary(fields);
@@ -61,22 +62,22 @@ describe("AI summary validation", () => {
     expect(countSentences("하나입니다. 둘입니다! 셋인가요?")).toBe(3);
   });
   it("translates title and excerpt, and summarizes only with enough source text", () => {
-    const full = validateArticleItem(item, { excerpt: longExcerpt });
+    const full = validateArticleItem(item, { title, excerpt: longExcerpt });
     expect(full).toMatchObject({ titleKo: "새 기능 출시", excerptKo: "발췌 번역입니다.", summaryNote: null });
     expect(full.summary?.summaryKo).toBe(fields.summaryKo);
 
-    const short = validateArticleItem(item, { excerpt: "short" });
+    const short = validateArticleItem(item, { title, excerpt: "short" });
     expect(short).toMatchObject({ titleKo: "새 기능 출시", excerptKo: "발췌 번역입니다.", summary: null, summaryNote: "INSUFFICIENT_CONTENT" });
 
-    expect(validateArticleItem(item, { excerpt: null }).excerptKo).toBeNull();
-    expect(validateArticleItem({ ...item, summarizable: false }, { excerpt: longExcerpt })).toMatchObject({ summary: null, summaryNote: "MODEL_INSUFFICIENT" });
+    expect(validateArticleItem(item, { title, excerpt: null }).excerptKo).toBeNull();
+    expect(validateArticleItem({ ...item, summarizable: false }, { title, excerpt: longExcerpt })).toMatchObject({ summary: null, summaryNote: "MODEL_INSUFFICIENT" });
   });
   it("keeps the translation when only the summary fails validation", () => {
-    const v = validateArticleItem({ ...item, summaryKo: "한 문장." }, { excerpt: longExcerpt });
+    const v = validateArticleItem({ ...item, summaryKo: "한 문장." }, { title, excerpt: longExcerpt });
     expect(v).toMatchObject({ titleKo: "새 기능 출시", summary: null, summaryNote: "SUMMARY_SENTENCES_1" });
   });
   it("rejects an item without a Korean title", () => {
-    expect(() => validateArticleItem({ ...item, titleKo: "  " }, { excerpt: longExcerpt })).toThrow(SummaryValidationError);
+    expect(() => validateArticleItem({ ...item, titleKo: "  " }, { title, excerpt: longExcerpt })).toThrow(SummaryValidationError);
   });
   it("validates repo summaries as 1–2 sentences and strips HTML", () => {
     expect(validateRepoSummary({ summaryKo: "<b>에이전트</b> 도구 모음입니다." })).toBe("에이전트 도구 모음입니다.");
@@ -88,7 +89,8 @@ describe("AI summary validation", () => {
   it("skips AI summary when there is not enough source text", () => {
     expect(hasEnoughContent(null)).toBe(false);
     expect(hasEnoughContent("short")).toBe(false);
-    expect(hasEnoughContent("x".repeat(80))).toBe(true);
+    expect(hasEnoughContent("x".repeat(80))).toBe(false); // 길이만 길고 정보가 없음
+    expect(hasEnoughContent(longExcerpt, title)).toBe(true);
   });
 });
 

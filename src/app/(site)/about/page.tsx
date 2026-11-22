@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { getData } from "@/lib/data";
 import { getDataMode } from "@/lib/env";
 import { TierBadge } from "@/components/articles/badges";
+import { LocalTime } from "@/components/ui/local-time";
 import { PageHeader } from "@/components/ui/page-header";
 
 export const dynamic = "force-dynamic";
@@ -23,7 +24,7 @@ function Section({ id, icon: Icon, title, children }: { id?: string; icon: typeo
 }
 
 export default async function AboutPage() {
-  const sources = await getData().listSources();
+  const [sources, stats] = await Promise.all([getData().listSources(), getData().getStats()]);
   const mode = getDataMode();
   return (
     <div className="mx-auto max-w-[860px]">
@@ -71,7 +72,19 @@ export default async function AboutPage() {
             </p>
           )}
           <div>
-            <p className="mb-2 text-sm font-medium text-muted">현재 활성 출처</p>
+            <dl className="mb-4 grid grid-cols-3 gap-3 rounded-xl border border-line p-3 text-sm">
+              {[
+                ["최근 24시간 수집 기사", stats.articlesLast24h],
+                ["추적 중인 저장소", stats.reposTotal],
+                [stats.mode === "demo" ? "데모 예시 요약" : "한국어 요약 완료", stats.summariesCompleted],
+              ].map(([label, value]) => (
+                <div key={label as string}>
+                  <dt className="text-xs text-muted">{label}</dt>
+                  <dd className="tabular mt-1 font-mono text-lg font-semibold text-fg">{value === null ? "—" : (value as number).toLocaleString("ko-KR")}</dd>
+                </div>
+              ))}
+            </dl>
+            <p className="mb-2 text-sm font-medium text-muted">현재 활성 출처 · 마지막 수집</p>
             <ul className="divide-y divide-line rounded-xl border border-line">
               {sources.map((s) => (
                 <li key={s.slug} className="flex items-center justify-between gap-3 px-3 py-2.5 text-sm">
@@ -84,7 +97,10 @@ export default async function AboutPage() {
                       s.name
                     )}
                   </span>
-                  <TierBadge tier={s.tier} />
+                  <span className="flex shrink-0 items-center gap-3">
+                    <span className="text-xs text-muted">{s.lastFetchedAt ? <LocalTime iso={s.lastFetchedAt} /> : "수집 기록 없음"}</span>
+                    <TierBadge tier={s.tier} />
+                  </span>
                 </li>
               ))}
             </ul>
@@ -100,7 +116,7 @@ export default async function AboutPage() {
             </li>
             <li className="flex items-start gap-2">
               <Users className="mt-1 size-4 shrink-0 text-muted" aria-hidden />
-              <span><strong className="text-fg">커뮤니티</strong> — 개발자 커뮤니티의 공유·토론 (예: Hacker News)</span>
+              <span><strong className="text-fg">커뮤니티</strong> — 개발자 커뮤니티의 공유·토론 (예: Hacker News). HN은 글을 발견한 경로일 뿐이라, HN 글은 실제 발행처(원문 도메인)를 따로 표시합니다.</span>
             </li>
             <li className="flex items-start gap-2">
               <PenLine className="mt-1 size-4 shrink-0 text-muted" aria-hidden />
@@ -131,7 +147,12 @@ export default async function AboutPage() {
           <ul className="list-disc space-y-1.5 pl-5">
             <li>번역과 요약은 수집 서버에서만 Google Gemini(기본, 무료 티어) 또는 Anthropic API로 만들며, 출처가 제공한 제목·발췌·공개 설명만을 근거로 합니다. 원문 전체를 읽은 결과가 아닙니다.</li>
             <li>제목과 발췌는 한국어로 번역해 보여 주고, 발췌가 짧으면 번역만 하고 요약은 만들지 않습니다. 상세 페이지에서 원문 발췌를 함께 확인할 수 있습니다.</li>
-            <li>원문에 없는 사실·기능·수치를 추가하지 않도록 지시하고, 결과 형식을 검증한 뒤에만 저장합니다.</li>
+            <li>
+              원문에 없는 사실·기능·수치를 추가하지 않도록 지시하고, 저장 전에 자동으로 확인합니다: 형식(문장 수·길이), 요약의 숫자·버전이 제목·발췌에 있는지, 원문의
+              &lsquo;reportedly·claims·may&rsquo; 같은 불확실 표현이 번역에서 사라지지 않았는지. 하나라도 어긋나면 요약을 저장하지 않습니다.
+            </li>
+            <li>이 확인은 원문과의 대조일 뿐, 주장의 사실 여부를 검증(팩트체크)한 것은 아닙니다. 기사 성격(발표·보안·연구 등)도 제목 기준 자동 분류입니다.</li>
+            <li>&lsquo;활용 아이디어&rsquo;는 원문 내용이 아니라 AI가 제안한 예시입니다.</li>
             <li>근거가 부족하면 “요약 없음”, 생성에 실패하면 “요약 실패”, 아직 처리 전이면 “요약 대기”로 표시합니다. 이 경우 요약을 지어내지 않습니다.</li>
             <li>AI 요약은 틀릴 수 있습니다. 의사결정 전에는 반드시 원문을 확인하세요.</li>
           </ul>
