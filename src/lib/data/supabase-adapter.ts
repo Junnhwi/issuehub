@@ -2,7 +2,7 @@ import "server-only";
 import { TOPICS } from "@/config/topics";
 import { getReadClient } from "@/lib/db/supabase";
 import { sortGames } from "@/lib/games";
-import type { Article, Game, GameList, Repository, Source, SourceKind, SourceTier, SummaryStatus } from "@/types";
+import type { AiReadRecord, Article, DeepRead, Game, GameList, Repository, RepoGuide, Source, SourceKind, SourceTier, SummaryStatus } from "@/types";
 import type { DataAdapter } from "./types";
 import { periodStart } from "./query";
 
@@ -128,6 +128,20 @@ function toRepo(r: RepoRow): Repository {
 /** PostgREST or() 문법을 깨뜨릴 수 있는 문자를 제거 */
 const sanitize = (q: string) => q.replace(/[,()*%\\"]/g, " ").trim();
 
+type AiReadRow = { status: "completed" | "skipped" | "failed"; content: unknown; image_url?: string | null; source_chars: number | null; error: string | null; updated_at: string } | null;
+function toAiRead<T>(row: AiReadRow): AiReadRecord<T> | null {
+  if (!row) return null;
+  return {
+    status: row.status,
+    content: row.status === "completed" ? (row.content as T) : null,
+    imageUrl: row.image_url ?? null,
+    sourceChars: row.source_chars,
+    error: row.error,
+    updatedAt: row.updated_at,
+    isDemo: false,
+  };
+}
+
 function check<T>(res: { data: T; error: { code?: string; message: string } | null }): T {
   // 코드가 없는 오류(잘못된 키·연결 실패 등)는 원인 메시지를 대신 남긴다(키 값은 포함되지 않음)
   if (res.error) throw new Error(`DB_ERROR:${res.error.code || res.error.message.slice(0, 100)}`);
@@ -178,7 +192,10 @@ export const supabaseAdapter: DataAdapter = {
       ) as ArticleRow[];
       related = rows.map(toArticle);
     }
-    return { article, related };
+    const dr = await db.from("article_deep_reads").select("status, content, image_url, source_chars, error, updated_at").eq("article_id", id).maybeSingle();
+    // 0009 미적용(PGRST205)이면 해설 없이 보여 준다
+    const deepRead = dr.error?.code === "PGRST205" ? null : toAiRead<DeepRead>(check(dr));
+    return { article, related, deepRead };
   },
 
   async listRepos(p) {
@@ -204,7 +221,9 @@ export const supabaseAdapter: DataAdapter = {
     const snaps = check(
       await db.from("repo_snapshots").select("captured_date, stars_count").eq("repository_id", id).order("captured_date", { ascending: false }).limit(30),
     ) as { captured_date: string; stars_count: number }[];
-    return { repo: toRepo(row), snapshots: snaps.map((x) => ({ capturedDate: x.captured_date, starsCount: x.stars_count })).reverse() };
+    const g = await db.from("repo_guides").select("status, content, source_chars, error, updated_at").eq("repo_id", id).maybeSingle();
+    const guide = g.error?.code === "PGRST205" ? null : toAiRead<RepoGuide>(check(g));
+    return { repo: toRepo(row), snapshots: snaps.map((x) => ({ capturedDate: x.captured_date, starsCount: x.stars_count })).reverse(), guide };
   },
 
   async listLanguages() {

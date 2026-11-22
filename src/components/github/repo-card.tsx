@@ -1,4 +1,5 @@
-import { GitFork, Star, TrendingUp, Hourglass } from "lucide-react";
+import { ArrowUpRight, GitFork, Star, TrendingUp, Hourglass } from "lucide-react";
+import Link from "next/link";
 import type { Repository } from "@/types";
 import { formatCount, formatSigned } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -48,15 +49,28 @@ export function GrowthBadge({ repo }: { repo: Repository }) {
   );
 }
 
+/** GitHub 프로필 이미지(작게, 지연 로드). 데모 저장소는 실제 계정이 아니므로 그리지 않는다 */
+export function OwnerAvatar({ repo: r, size }: { repo: Repository; size: number }) {
+  if (r.isDemo) return <span className="shrink-0 rounded-md bg-elevated" style={{ width: size, height: size }} aria-hidden />;
+  const owner = r.fullName.split("/")[0];
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={`https://github.com/${owner}.png?size=${size * 2}`} alt="" width={size} height={size} loading="lazy" decoding="async" referrerPolicy="no-referrer" className="shrink-0 rounded-md border border-line bg-elevated" />
+  );
+}
+
 export function RepoCard({ repo: r, compact = false }: { repo: Repository; compact?: boolean }) {
   const [owner, name] = r.fullName.split("/");
   if (compact) {
     return (
       <li className="group relative rounded-xl px-3 py-2.5 transition-colors hover:bg-hover">
-        <a href={r.htmlUrl} target="_blank" rel="noopener noreferrer" className="block truncate text-sm font-medium after:absolute after:inset-0 after:rounded-xl">
-          <span className="text-muted">{owner}/</span>
-          {name}
-        </a>
+        <Link href={`/github/${r.id}`} className="flex min-w-0 items-center gap-2 text-sm font-medium after:absolute after:inset-0 after:rounded-xl">
+          <OwnerAvatar repo={r} size={20} />
+          <span className="truncate">
+            <span className="text-muted">{owner}/</span>
+            {name}
+          </span>
+        </Link>
         <div className="mt-1 flex items-center gap-3 text-xs text-muted">
           <span className="tabular inline-flex items-center gap-1">
             <Star className="size-3.5" aria-hidden />
@@ -79,11 +93,12 @@ export function RepoCard({ repo: r, compact = false }: { repo: Repository; compa
   return (
     <li className="group relative grid gap-x-8 gap-y-3 px-4 py-4 transition-colors hover:bg-hover/50 focus-within:bg-hover/50 sm:grid-cols-[minmax(0,1fr)_auto_auto] md:px-5">
       <div className="min-w-0">
-        <h3 className="flex flex-wrap items-center gap-x-2 pr-10 text-[16px] font-semibold sm:pr-0">
-          <a href={r.htmlUrl} target="_blank" rel="noopener noreferrer" className="break-all outline-none after:absolute after:inset-0 focus-visible:underline">
+        <h3 className="flex flex-wrap items-center gap-x-2 pr-20 text-[16px] font-semibold sm:pr-0">
+          <OwnerAvatar repo={r} size={22} />
+          <Link href={`/github/${r.id}`} className="break-all outline-none after:absolute after:inset-0 focus-visible:underline">
             <span className="font-normal text-muted">{owner}/</span>
             {name}
-          </a>
+          </Link>
           {r.isDemo && <span className="text-xs font-medium text-warning">데모</span>}
         </h3>
         <p className="mt-1 line-clamp-2 max-w-[72ch] text-[14.5px] leading-relaxed text-fg-2">
@@ -118,7 +133,17 @@ export function RepoCard({ repo: r, compact = false }: { repo: Repository; compa
         <GrowthBadge repo={r} />
       </div>
 
-      <div className="absolute right-2 top-3 sm:static sm:self-center">
+      <div className="absolute right-2 top-3 flex items-center sm:static sm:self-center">
+        <a
+          href={r.htmlUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`GitHub에서 ${r.fullName} 열기 (새 창)`}
+          title="GitHub에서 보기"
+          className="relative z-10 grid size-11 place-items-center rounded-lg text-muted transition-colors hover:bg-hover hover:text-fg md:size-9"
+        >
+          <ArrowUpRight className="size-4" aria-hidden />
+        </a>
         <BookmarkButton item={repoBookmark(r)} ghost />
       </div>
     </li>
@@ -127,5 +152,5 @@ export function RepoCard({ repo: r, compact = false }: { repo: Repository; compa
 
 /** 저장소 리스트 컨테이너 */
 export function RepoList({ children }: { children: React.ReactNode }) {
-  return <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">{children}</ul>;
+  return <ul className="stagger divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">{children}</ul>;
 }

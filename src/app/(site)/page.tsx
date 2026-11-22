@@ -1,4 +1,4 @@
-import { ArrowRight, CheckCircle2, TriangleAlert } from "lucide-react";
+import { ArrowRight, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import { getData } from "@/lib/data";
 import { formatCount, isOlderThan } from "@/lib/utils";
@@ -18,8 +18,8 @@ function SyncStatus({ stats }: { stats: Stats }) {
   const last = stats.lastSuccessfulSyncAt;
   const stale = last ? isOlderThan(last, 3) : true; // 매시 수집: 3시간 넘게 성공이 없으면 지연
   return (
-    <p className="inline-flex items-center gap-2 text-[13px] text-fg-2">
-      {last && !stale ? <CheckCircle2 className="size-4 text-success" aria-hidden /> : <TriangleAlert className="size-4 text-warning" aria-hidden />}
+    <p className="inline-flex items-center gap-2 rounded-full border border-line bg-surface/70 px-3 py-1.5 text-[13px] text-fg-2 backdrop-blur">
+      {last && !stale ? <span className="live-dot" aria-hidden /> : <TriangleAlert className="size-4 text-warning" aria-hidden />}
       {last ? (
         <span>
           마지막 성공 수집 <LocalTime iso={last} className="font-medium text-fg" />
@@ -67,17 +67,33 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-9 md:space-y-11">
-      <section aria-labelledby="hero-title" className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div>
-          <p className="mb-2 text-[13px] font-medium text-muted">Overview</p>
-          <h1 id="hero-title" className="text-[26px] font-bold tracking-tight md:text-[30px]">
-            기술의 흐름을 한눈에.
-          </h1>
-          <p className="mt-2 max-w-[60ch] text-[15px] leading-relaxed text-muted">
-            개발 커뮤니티와 공식 출처의 새 소식, 눈에 띄는 GitHub 저장소를 출처와 함께 모았습니다. 한국어 요약은 원문 정보에 근거할 때만 붙입니다.
-          </p>
+      <section aria-labelledby="hero-title" className="banner rounded-3xl border border-line bg-surface/40 px-5 py-7 md:px-8 md:py-9">
+        <div className="banner-grid" aria-hidden />
+        <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+          <div>
+            <SyncStatus stats={stats} />
+            <h1 id="hero-title" className="mt-4 text-[28px] font-bold tracking-tight md:text-[36px]">
+              기술의{" "}
+              <span className="bg-gradient-to-r from-accent to-hot bg-clip-text text-transparent">흐름</span>을 한눈에.
+            </h1>
+            <p className="mt-2 max-w-[60ch] text-[15px] leading-relaxed text-fg-2">
+              개발 커뮤니티와 공식 출처의 새 소식, 눈에 띄는 GitHub 저장소를 모아 한국어로 정리합니다. 화제가 된 글은 AI가 원문을 직접 읽고 핵심 개념까지 풀어 설명합니다.
+            </p>
+          </div>
         </div>
-        <SyncStatus stats={stats} />
+        <nav aria-label="관심 분야 바로가기" className="mt-6 flex flex-wrap gap-2">
+          {topTopics.slice(0, 7).map((t) => (
+            <Link
+              key={t.slug}
+              href={`/topics/${t.slug}`}
+              className="lift inline-flex h-10 items-center gap-2 rounded-full border border-line bg-surface/80 px-3.5 text-[13.5px] font-medium text-fg-2 backdrop-blur hover:border-line-strong hover:text-fg md:h-9"
+            >
+              <span className="size-2 rounded-full" style={{ background: t.color }} aria-hidden />
+              {t.nameKo}
+              <span className="tabular font-mono text-xs text-muted">{formatCount(t.articleCount)}</span>
+            </Link>
+          ))}
+        </nav>
       </section>
 
       <div className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_300px]">
@@ -119,7 +135,7 @@ export default async function DashboardPage() {
               }
             />
             <p className="-mt-2 mb-3 text-[13px] text-muted">IssueHub가 직접 기록한 Star 스냅샷 기준입니다(GitHub 공식 Trending 아님). 관측 기간이 짧으면 &lsquo;집계 중&rsquo;으로 표시합니다.</p>
-            <ul className="grid gap-x-4 rounded-2xl border border-line bg-surface p-2 sm:grid-cols-2">
+            <ul className="stagger grid gap-x-4 rounded-2xl border border-line bg-surface p-2 sm:grid-cols-2">
               {repos.items.map((r) => (
                 <RepoCard key={r.id} repo={r} compact />
               ))}
@@ -160,32 +176,13 @@ export default async function DashboardPage() {
                 </Link>
               }
             >
-              <ul className="-mx-3">
+              <ul className="stagger -mx-3">
                 {games.items.slice(0, 5).map((g, i) => (
                   <GameCompactRow key={g.appid} game={g} rank={i + 1} />
                 ))}
               </ul>
             </RailSection>
           )}
-
-          <RailSection id="rail-topics" title="자주 등장하는 토픽">
-            <ul className="space-y-0.5">
-              {topTopics.map((t) => (
-                <li key={t.slug}>
-                  <Link
-                    href={`/topics/${t.slug}`}
-                    className="-mx-2 flex h-9 items-center justify-between rounded-lg px-2 text-[14px] text-fg-2 transition-colors hover:bg-hover hover:text-fg"
-                  >
-                    <span className="flex items-center">
-                      <span className="mr-2.5 size-2 shrink-0 rounded-full" style={{ background: t.color }} aria-hidden />
-                      {t.nameKo}
-                    </span>
-                    <span className="tabular font-mono text-xs text-muted">{formatCount(t.articleCount)}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </RailSection>
 
         </aside>
       </div>

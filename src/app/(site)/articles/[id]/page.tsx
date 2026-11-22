@@ -14,6 +14,7 @@ import { BookmarkButton } from "@/components/articles/bookmark-button";
 import { BuzzBadge, Engagement } from "@/components/articles/buzz";
 import { CopyLinkButton } from "@/components/articles/copy-link-button";
 import { SummaryPanel } from "@/components/articles/summary-panel";
+import { DeepReadPanel } from "@/components/articles/deep-read-panel";
 import { buttonClass } from "@/components/ui/button";
 import { LocalTime } from "@/components/ui/local-time";
 
@@ -32,7 +33,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ArticlePage({ params }: Props) {
   const res = await load((await params).id);
   if (!res) notFound();
-  const { article: a, related } = res;
+  const { article: a, related, deepRead } = res;
+  const image = deepRead?.status === "completed" ? deepRead.imageUrl : null;
   const hasReaction = a.popularity !== null || a.commentsCount !== null;
   const kind = articleKind(a.title, a.originalUrl);
   // HN은 발견·토론 출처이고 실제 발행처는 원문 도메인이다
@@ -125,8 +127,15 @@ export default async function ArticlePage({ params }: Props) {
           </div>
         </header>
 
+        {image && (
+          // 원문이 공개한 대표 이미지(og:image)를 원문 서버에서 그대로 불러온다
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={image} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" className="page-in mt-6 aspect-[1200/630] w-full rounded-2xl border border-line bg-elevated object-cover" />
+        )}
+
         <div className="mt-8 space-y-6">
           <SummaryPanel article={a} />
+          <DeepReadPanel record={deepRead} fetchedAt={a.fetchedAt} />
 
           {a.excerpt && (
             <section className="rounded-2xl border border-line p-5">

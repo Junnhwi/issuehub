@@ -158,6 +158,21 @@ export default async function AboutPage() {
           </ul>
         </Section>
 
+        <Section icon={Bot} title="AI 원문 해설과 README 활용 가이드">
+          <ul className="list-disc space-y-1.5 pl-5">
+            <li>
+              매시 수집 때 최근 3일 안의 글을 화제순으로 몇 건씩 골라, AI가 <strong className="text-fg">원문 본문</strong>을 읽고 핵심 개념·주요 내용·적용 방법을 한국어로 풀어 씁니다.
+              GitHub 저장소는 공식 API로 README를 읽고 무엇인지·어떤 문제를 푸는지·어떻게 활용하는지 정리합니다.
+            </li>
+            <li>
+              사이트의 robots.txt가 IssueHub나 대표 AI 수집기(GPTBot·ClaudeBot·Google-Extended 등)를 막았거나 페이지가 noai를 표시하면 원문을 읽지 않습니다.
+              로그인이 필요한 페이지·PDF도 해설하지 않습니다.
+            </li>
+            <li>원문 본문과 README는 AI 입력으로만 쓰고 저장하지 않습니다. 저장하는 것은 해설과, 원문에 그대로 있는지 확인한 짧은 인용뿐입니다.</li>
+            <li>해설의 숫자는 원문과 자동 대조하고, 명령어는 README에 그대로 있는 것만 남깁니다. 용어 풀이는 이해를 돕는 일반적인 설명이며, 해설 전체가 사실 검증을 거친 것은 아닙니다.</li>
+          </ul>
+        </Section>
+
         <Section icon={Mail} title="원문 링크와 삭제 요청">
           <p>
             모든 항목은 원문 링크를 함께 제공하며, 본문 전체를 복제·재배포하지 않습니다. 저작권자나 작성자가 목록 노출 중단이나 요약 삭제를 원하면

@@ -23,6 +23,9 @@
   --warning-soft: rgb(251 191 36 / 0.12);
   --danger: #f87171;
   --danger-soft: rgb(248 113 113 / 0.12);
+  /* 화제도 강조색: 빨강(하락·경고 연상) 대신 파랑→보라 */
+  --hot: #a78bfa;
+  --hot-soft: rgb(167 139 250 / 0.14);
   --focus: #38bdf8;
   --shadow: 0 1px 2px rgb(0 0 0 / 0.3);
 }
@@ -48,6 +51,8 @@
   --warning-soft: rgb(180 83 9 / 0.08);
   --danger: #b91c1c;
   --danger-soft: rgb(185 28 28 / 0.07);
+  --hot: #7c3aed;
+  --hot-soft: rgb(124 58 237 / 0.08);
   --focus: #0284c7;
   --shadow: 0 1px 2px rgb(15 23 42 / 0.06);
 }
@@ -72,6 +77,8 @@
   --color-warning-soft: var(--warning-soft);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
+  --color-hot: var(--hot);
+  --color-hot-soft: var(--hot-soft);
   --font-sans: var(--font-geist), var(--font-pretendard), ui-sans-serif, system-ui, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
 }
@@ -131,16 +138,168 @@ h1, h2, h3, h4 {
   white-space: nowrap;
 }
 
-/* 스켈레톤 */
-@keyframes shimmer {
-  0% { opacity: 0.55; }
-  50% { opacity: 1; }
-  100% { opacity: 0.55; }
+/* 스켈레톤: 옅은 빛이 왼쪽에서 오른쪽으로 지나간다(transform만 써서 레이아웃 비용 없음) */
+@keyframes sheen {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
 }
 .skeleton {
+  position: relative;
+  overflow: hidden;
   background: var(--elevated);
   border-radius: 8px;
-  animation: shimmer 1.6s ease-in-out infinite;
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.06), transparent);
+  animation: sheen 1.4s ease-in-out infinite;
+}
+[data-theme="light"] .skeleton::after {
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.7), transparent);
+}
+
+/* ---------- Motion (CSS만, transform·opacity) ---------- */
+/* 목록이 순서대로 떠오른다. style={{"--i": n}}로 순서를 주고, 12번째 이후는 같이 나타난다 */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+.rise {
+  animation: rise 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(min(var(--i, 0), 12) * 45ms);
+}
+
+/* 목록 컨테이너에 붙이면 자식이 위에서부터 차례로 떠오른다(12번째 이후는 함께) */
+.stagger > * {
+  animation: rise 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 440ms;
+}
+.stagger > :nth-child(1) { animation-delay: 0ms; }
+.stagger > :nth-child(2) { animation-delay: 40ms; }
+.stagger > :nth-child(3) { animation-delay: 80ms; }
+.stagger > :nth-child(4) { animation-delay: 120ms; }
+.stagger > :nth-child(5) { animation-delay: 160ms; }
+.stagger > :nth-child(6) { animation-delay: 200ms; }
+.stagger > :nth-child(7) { animation-delay: 240ms; }
+.stagger > :nth-child(8) { animation-delay: 280ms; }
+.stagger > :nth-child(9) { animation-delay: 320ms; }
+.stagger > :nth-child(10) { animation-delay: 360ms; }
+.stagger > :nth-child(11) { animation-delay: 400ms; }
+.stagger > :nth-child(12) { animation-delay: 440ms; }
+
+/* 페이지 전환 시 본문이 부드럽게 나타난다((site)/template.tsx) */
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.page-in {
+  animation: page-in 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* 카드 호버: 살짝 떠오름 */
+.lift {
+  transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 300ms cubic-bezier(0.16, 1, 0.3, 1), border-color 200ms;
+}
+@media (hover: hover) {
+  .lift:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px -12px rgb(0 0 0 / 0.45);
+  }
+  [data-theme="light"] .lift:hover {
+    box-shadow: 0 12px 28px -14px rgb(15 23 42 / 0.25);
+  }
+}
+
+/* '큰 화제' 칩: 그라데이션 위로 빛이 천천히 지나간다 */
+@keyframes chip-shine {
+  0%, 70% { transform: translateX(-120%); }
+  100% { transform: translateX(120%); }
+}
+.hot-chip {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(100deg, var(--accent), var(--hot));
+  color: var(--on-accent);
+}
+.hot-chip::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / 0.35), transparent 70%);
+  animation: chip-shine 3.2s ease-in-out infinite;
+}
+
+/* 상태 점: 살아 있는 느낌의 잔잔한 파동 */
+@keyframes ping {
+  0% { transform: scale(1); opacity: 0.6; }
+  80%, 100% { transform: scale(2.4); opacity: 0; }
+}
+.live-dot {
+  position: relative;
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--success);
+}
+.live-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: inherit;
+  animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* 홈 배너: 천천히 흐르는 빛 번짐(이미지 다운로드 없음) */
+@keyframes drift {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(4%, -6%, 0) scale(1.08); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+.banner {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.banner::before,
+.banner::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 60%;
+  aspect-ratio: 1;
+  border-radius: 9999px;
+  filter: blur(60px);
+  opacity: 0.35;
+  animation: drift 14s ease-in-out infinite;
+}
+.banner::before {
+  top: -45%;
+  left: -10%;
+  background: var(--accent);
+}
+.banner::after {
+  bottom: -55%;
+  right: -12%;
+  background: var(--hot);
+  animation-delay: -7s;
+}
+[data-theme="light"] .banner::before,
+[data-theme="light"] .banner::after {
+  opacity: 0.18;
+}
+/* 점 격자 무늬 */
+.banner-grid {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: radial-gradient(var(--border-strong) 1px, transparent 1px);
+  background-size: 22px 22px;
+  mask-image: linear-gradient(to bottom, black, transparent 85%);
+  opacity: 0.5;
 }
 
 @keyframes toast-in {

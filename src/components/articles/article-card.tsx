@@ -27,7 +27,7 @@ export function ArticleCard({ article: a, related = [] }: { article: Article; va
   const time = a.publishedAt ?? a.fetchedAt;
 
   return (
-    <article className="group relative flex flex-col rounded-2xl border border-line bg-surface p-5 transition-colors hover:border-line-strong focus-within:border-line-strong md:p-6">
+    <article className="lift group relative flex flex-col rounded-2xl border border-line bg-surface p-5 hover:border-line-strong focus-within:border-line-strong md:p-6">
       <div className="mb-3.5 flex items-start justify-between gap-3">
         <div className="flex flex-wrap items-center gap-1.5">
           <BuzzBadge article={a} />

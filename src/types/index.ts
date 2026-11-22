@@ -164,3 +164,38 @@ export interface Stats {
   lastSuccessfulSyncAt: string | null;
   basis: string;
 }
+
+/** AI 원문 해설(기사). 수집 배치가 원문 본문을 읽고 만든다(0009) */
+export interface DeepRead {
+  level: "입문" | "중급" | "심화";
+  overview: string;
+  prerequisites: string[];
+  keyConcepts: { term: string; explanation: string }[];
+  sections: { heading: string; body: string }[];
+  practical: string[];
+  quotes: { original: string; ko: string }[];
+  limitations: string;
+}
+
+/** README 활용 가이드(저장소) */
+export interface RepoGuide {
+  whatItIs: string;
+  problem: string;
+  audience: string;
+  features: string[];
+  useCases: string[];
+  gettingStarted: { step: string; command: string }[];
+  stack: string[];
+  limitations: string;
+}
+
+/** 해설·가이드 생성 기록. completed가 아니면 content는 null */
+export interface AiReadRecord<T> {
+  status: "completed" | "skipped" | "failed";
+  content: T | null;
+  imageUrl: string | null;
+  sourceChars: number | null;
+  error: string | null;
+  updatedAt: string;
+  isDemo: boolean;
+}

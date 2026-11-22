@@ -1,4 +1,4 @@
-import type { Article, Game, PricePoint, Repository, Source, SourceRef, SummaryStatus } from "@/types";
+import type { AiReadRecord, Article, DeepRead, Game, PricePoint, RepoGuide, Repository, Source, SourceRef, SummaryStatus } from "@/types";
 import { computeGrowth } from "./growth";
 import { scoreRelevance } from "@/lib/ingestion/normalize";
 
@@ -388,4 +388,49 @@ export const DEMO_PRICE_HISTORY: Record<number, PricePoint[]> = {
     { changedAt: hoursAgo(24 * 60), price: 9900, regular: 19800, cut: 50, currency: "KRW" },
     { changedAt: hoursAgo(24 * 46), price: 19800, regular: 19800, cut: 0, currency: "KRW" },
   ],
+};
+
+/** 데모 해설·가이드: 화면 구성을 보여 주기 위한 가상의 예시(AI 생성 아님). 첫 데모 기사·저장소에만 붙인다 */
+export const DEMO_DEEP_READ: AiReadRecord<DeepRead> = {
+  status: "completed",
+  isDemo: true,
+  imageUrl: null,
+  sourceChars: 4200,
+  error: null,
+  updatedAt: DEMO_LAST_SYNC,
+  content: {
+    level: "중급",
+    overview: "[데모] 가상의 SDK 릴리스 노트를 예로 든 해설 화면입니다. 실제로는 수집 배치가 원문 본문을 읽고 핵심 개념과 주요 내용을 한국어로 풀어 씁니다. 이 내용은 AI가 만든 것이 아닌 예시 문장입니다.",
+    prerequisites: ["JSON 스키마의 기본 개념", "LLM API 호출 경험"],
+    keyConcepts: [
+      { term: "구조화 출력", explanation: "모델이 자유 문장 대신 정해진 JSON 형식으로 답하게 하는 방식입니다. 프로그램이 결과를 바로 읽을 수 있어 파싱 오류가 줄어듭니다." },
+      { term: "스키마 검증", explanation: "받은 데이터가 약속한 형식(필드 이름·타입)과 맞는지 확인하는 단계입니다. 맞지 않으면 다시 요청하거나 오류로 처리합니다." },
+    ],
+    sections: [
+      { heading: "무엇이 바뀌었나", body: "[데모] 응답을 스키마로 검증하는 기능이 추가되었다는 가상의 내용입니다. 실제 해설에서는 원문의 흐름을 따라 섹션별로 정리합니다." },
+      { heading: "왜 필요한가", body: "[데모] 검증이 없으면 형식이 어긋난 응답이 그대로 저장될 수 있습니다. 실제 해설에서는 원문이 설명한 이유를 함께 풉니다." },
+    ],
+    practical: ["[데모] 원문에 나온 설정·코드 포인트가 이곳에 정리됩니다."],
+    quotes: [],
+    limitations: "데모 예시이므로 실제 원문과 관계가 없습니다.",
+  },
+};
+
+export const DEMO_REPO_GUIDE: AiReadRecord<RepoGuide> = {
+  status: "completed",
+  isDemo: true,
+  imageUrl: null,
+  sourceChars: 3000,
+  error: null,
+  updatedAt: DEMO_LAST_SYNC,
+  content: {
+    whatItIs: "[데모] 가상의 저장소를 예로 든 활용 가이드 화면입니다. 실제로는 README를 읽고 무엇인지, 어떤 문제를 푸는지 정리합니다.",
+    problem: "[데모] 제작자가 해결하려는 문제와 만든 의도가 이곳에 정리됩니다.",
+    audience: "[데모] 누구에게 유용한지 한 문장으로 정리됩니다.",
+    features: ["[데모] 주요 기능 1", "[데모] 주요 기능 2"],
+    useCases: ["[데모] README에 근거한 활용 시나리오가 이곳에 정리됩니다."],
+    gettingStarted: [{ step: "[데모] 설치 단계 예시", command: "npm install example-package" }],
+    stack: ["TypeScript"],
+    limitations: "데모 예시이므로 실제 저장소와 관계가 없습니다.",
+  },
 };

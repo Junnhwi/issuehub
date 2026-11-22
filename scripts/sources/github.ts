@@ -76,3 +76,36 @@ export async function fetchGithubRepos(limit: number, token?: string): Promise<{
   }
   return { repos: [...byId.values()], rateRemaining: Number.isFinite(rateRemaining) ? rateRemaining : null };
 }
+
+/** README에서 이미지·배지·HTML 주석을 빼고 텍스트만 남긴다(AI 입력용, 저장하지 않음) */
+export function cleanReadme(md: string, max = 16_000): string {
+  const t = md
+    .replace(/<!--[\s\S]*?-->/g, "")
+    .replace(/\[!\[[^\]]*\]\([^)]*\)\]\([^)]*\)/g, "") // 링크 달린 배지
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, "")
+    .replace(/\[\]\([^)]*\)/g, "")
+    .replace(/<img\b[^>]*>/gi, "")
+    .replace(/<\/?(p|div|picture|source|a|br|sup|sub|details|summary)\b[^>]*>/gi, " ")
+    .replace(/^\s*\[!\[.*$/gm, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+  return t.length > max ? `${t.slice(0, max)}\n…(이하 생략)` : t;
+}
+
+/** 공식 GitHub API로 README 원문을 받는다(없으면 null). 토큰이 있으면 시간당 5000회 */
+export async function fetchReadme(fullName: string, token?: string): Promise<string | null> {
+  if (!/^[\w.-]+\/[\w.-]+$/.test(fullName)) return null;
+  try {
+    const res = await fetchWithRetry(`https://api.github.com/repos/${fullName}/readme`, {
+      headers: {
+        Accept: "application/vnd.github.raw+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    }, { retries: 1, timeoutMs: 10_000 });
+    const text = await res.text();
+    return text.length > 2_000_000 ? null : text;
+  } catch {
+    return null;
+  }
+}

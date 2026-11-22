@@ -56,6 +56,7 @@ npm run dev
    6. [`0006_steam_games.sql`](supabase/migrations/0006_steam_games.sql) — Steam 게임 테이블과 `steam` 출처
    7. [`0007_game_price_history.sql`](supabase/migrations/0007_game_price_history.sql) — 한국 Steam 가격 이력·세일 종료일(적용 전에 푸시하면 게임 수집이 실패)
    8. [`0008_summary_provenance.sql`](supabase/migrations/0008_summary_provenance.sql) — (선택) 요약을 만든 모델·프롬프트 버전 기록. 적용 전에도 요약기는 동작(기록만 건너뜀)
+   9. [`0009_ai_deep_reads.sql`](supabase/migrations/0009_ai_deep_reads.sql) — AI 원문 해설·README 활용 가이드 테이블. 적용 전에는 해설 단계만 건너뜀(`npm run deep-read`). 1회 처리량은 Actions Variables `AI_DEEP_READ_LIMIT`·`AI_REPO_GUIDE_LIMIT`(기본 6)
 3. **키 확인** — Project Settings → API Keys에서 Project URL, Publishable key, Secret key를 복사합니다.
 4. **GitHub 토큰(선택, 권장)** — GitHub Settings → Developer settings → Fine-grained token(권한 없음, public repo 읽기만)을 발급합니다. 없으면 검색 API 한도가 분당 10회로 줄어듭니다.
 5. **`.env.local` 작성**

@@ -14,11 +14,12 @@ export function BuzzBadge({ article: a }: { article: Article }) {
       title={BUZZ_EXPLAIN}
       className={cn(
         "inline-flex h-6 shrink-0 items-center gap-1 rounded-full px-2.5 text-[12px] font-semibold",
-        hot ? "bg-danger-soft text-danger" : "bg-accent-soft text-accent-fg",
+        // 빨강은 하락·경고로 읽히므로 화제도에는 쓰지 않는다
+        hot ? "hot-chip" : "bg-accent-soft text-accent-fg",
       )}
     >
-      <Icon className="size-3.5" aria-hidden />
-      {BUZZ_RULES[level].label}
+      <Icon className="relative size-3.5" aria-hidden />
+      <span className="relative">{BUZZ_RULES[level].label}</span>
     </span>
   );
 }

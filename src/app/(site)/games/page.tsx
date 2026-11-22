@@ -70,7 +70,7 @@ export default async function GamesPage({ searchParams }: { searchParams: SP }) 
       </p>
 
       {items.length ? (
-        <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
+        <ul className="stagger divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
           {items.map((g, i) => (
             <GameRow key={g.appid} game={g} rank={g.ranks[list] ?? i + 1} />
           ))}

@@ -1,7 +1,7 @@
 import { TOPICS } from "@/config/topics";
 import type { DataAdapter } from "./types";
 import { sortGames } from "@/lib/games";
-import { DEMO_ARTICLES, DEMO_GAMES, DEMO_LAST_SYNC, DEMO_PRICE_HISTORY, DEMO_REPOS, DEMO_SNAPSHOTS, DEMO_SOURCES } from "./demo-data";
+import { DEMO_ARTICLES, DEMO_DEEP_READ, DEMO_GAMES, DEMO_REPO_GUIDE, DEMO_LAST_SYNC, DEMO_PRICE_HISTORY, DEMO_REPOS, DEMO_SNAPSHOTS, DEMO_SOURCES } from "./demo-data";
 import { filterArticles, filterRepos, paginate } from "./query";
 
 export const demoAdapter: DataAdapter = {
@@ -12,14 +12,14 @@ export const demoAdapter: DataAdapter = {
     const article = DEMO_ARTICLES.find((a) => a.id === id);
     if (!article) return null;
     const related = DEMO_ARTICLES.filter((a) => a.id !== id && a.topics.some((t) => article.topics.includes(t))).slice(0, 4);
-    return { article, related };
+    return { article, related, deepRead: article.id === DEMO_ARTICLES[0].id ? DEMO_DEEP_READ : null };
   },
   async listRepos(p) {
     return paginate(filterRepos(DEMO_REPOS, p), p.cursor, p.limit, DEMO_LAST_SYNC);
   },
   async getRepo(id) {
     const repo = DEMO_REPOS.find((r) => r.id === id);
-    return repo ? { repo, snapshots: DEMO_SNAPSHOTS[id] ?? [] } : null;
+    return repo ? { repo, snapshots: DEMO_SNAPSHOTS[id] ?? [], guide: repo.id === DEMO_REPOS[0].id ? DEMO_REPO_GUIDE : null } : null;
   },
   async listLanguages() {
     return [...new Set(DEMO_REPOS.map((r) => r.language).filter((l): l is string => !!l))].sort();

@@ -130,7 +130,13 @@ export function GameTags({ tags }: { tags: string[] }) {
 export function GameCompactRow({ game: g, rank }: { game: Game; rank: number }) {
   return (
     <li className="group relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-hover">
-      <span className="tabular w-5 shrink-0 font-mono text-xs text-muted">{rank}</span>
+      <span className="tabular w-4 shrink-0 font-mono text-xs text-muted">{rank}</span>
+      {g.headerImage ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={g.headerImage} alt="" width={64} height={30} loading="lazy" decoding="async" className="h-[30px] w-16 shrink-0 rounded-md border border-line bg-elevated object-cover" />
+      ) : (
+        <span className="h-[30px] w-16 shrink-0 rounded-md bg-elevated" aria-hidden />
+      )}
       <div className="min-w-0">
         <Link href={`/games/${g.appid}`} className="block truncate text-sm font-medium after:absolute after:inset-0 after:rounded-xl">
           {g.name}

@@ -12,7 +12,8 @@
     "test": "vitest run",
     "ingest": "tsx scripts/ingest.ts",
     "ingest:dry": "tsx scripts/ingest.ts --dry-run",
-    "summarize": "tsx scripts/summarize.ts"
+    "summarize": "tsx scripts/summarize.ts",
+    "deep-read": "tsx scripts/deep-read.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.10.0",

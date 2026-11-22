@@ -162,5 +162,5 @@ export function ArticleRow({ article: a, dense = false, related = [] }: { articl
 
 /** 구분선으로 나뉜 리스트 컨테이너 */
 export function ArticleList({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <ul className={cn("divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface", className)}>{children}</ul>;
+  return <ul className={cn("stagger divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface", className)}>{children}</ul>;
 }

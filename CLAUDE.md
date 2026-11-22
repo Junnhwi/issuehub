@@ -5,7 +5,7 @@
 ## 명령
 - `npm run dev` / `npm run build`
 - 검증: `npm run lint && npm run typecheck && npm test && npm run build`
-- 수집: `npm run ingest:dry`(저장 안 함) / `npm run ingest` / `npm run summarize`
+- 수집: `npm run ingest:dry`(저장 안 함) / `npm run ingest` / `npm run summarize` / `npm run deep-read`(원문 해설·README 가이드, `--dry-run` 가능)
 - Windows: dev 서버가 켜진 상태에서 `npm run build`를 돌리면 `.next`가 충돌할 수 있으니 먼저 끈다.
 
 ## 구조
@@ -35,3 +35,4 @@
 - 2026-11-20: Steam 게임 동향(/games, 0006) 추가. Steam 공개 API(featuredcategories, GetMostPlayedGames, IStoreBrowseService/GetItems, GetNumberOfCurrentPlayers) 키 없음. 영어 소개만 AI 번역.
 - 2026-11-20: 게임 상세 가격 추이(0007, ITAD API country=KR shop=61, 키 ITAD_API_KEY). 0007 적용 전 푸시 금지(discount_ends_at 열 없으면 게임 upsert 실패).
 - 2026-11-22: 품질·보안 개선(D22~D27). 수집기 SSRF 방어(`scripts/lib/safe-fetch.ts`), ingest.yml 입력 검증, CSP·HSTS, 토픽 강/약 키워드, 기사 성격·같은 사건 묶기(렌더 시점), AI 요약 원문 대조(숫자·불확실 표현), 홈 정보 구조, 연속 세일 병합. 0008(선택)은 미적용이어도 동작.
+- 2026-11-22: AI 원문 해설(기사, robots·noai 존중, 본문 미저장)·README 활용 가이드(저장소 상세 `/github/[id]`) 추가(D28~D30, 0009는 미적용이어도 동작). '큰 화제'는 빨강 대신 파랑→보라(`--hot`). CSS 전용 모션(`.stagger`·`.rise`·`.lift`·`.banner`, prefers-reduced-motion 존중)과 라우트별 스켈레톤.
